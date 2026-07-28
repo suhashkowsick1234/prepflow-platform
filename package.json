@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "license": "MIT",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev:local": "node run-local.js",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "build": "pnpm run typecheck && pnpm --filter ./artifacts/prepflow run build",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
-  "private": true,
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.1"
   },
