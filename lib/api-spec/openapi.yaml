@@ -1,0 +1,227 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: PrepFlow AI API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: generate
+    description: AI learning workspace generation
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /generate:
+    post:
+      operationId: generateWorkspace
+      tags: [generate]
+      summary: Generate a learning workspace for a topic
+      description: Calls Groq AI and returns a structured learning workspace as JSON
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopicInput"
+      responses:
+        "200":
+          description: Successfully generated learning workspace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningWorkspace"
+        "400":
+          description: Invalid input or AI response validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateError"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateError"
+        "500":
+          description: Server or AI error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateError"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    TopicInput:
+      type: object
+      required:
+        - topic
+      properties:
+        topic:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: The topic to generate learning content for
+    Flashcard:
+      type: object
+      required: [front, back]
+      properties:
+        front:
+          type: string
+          description: The question or term side of the flashcard
+        back:
+          type: string
+          description: The answer or definition side of the flashcard
+    QuizOption:
+      type: object
+      required: [text, isCorrect]
+      properties:
+        text:
+          type: string
+        isCorrect:
+          type: boolean
+    QuizQuestion:
+      type: object
+      required: [question, options, explanation]
+      properties:
+        question:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+          minItems: 2
+        correctIndex:
+          type: number
+          description: Zero-based index of the correct answer
+        explanation:
+          type: string
+    InterviewQuestion:
+      type: object
+      required: [question, answer]
+      properties:
+        question:
+          type: string
+        answer:
+          type: string
+        difficulty:
+          type: string
+          enum: [easy, medium, hard]
+    CheatSheetSection:
+      type: object
+      required: [category, points]
+      properties:
+        category:
+          type: string
+        points:
+          type: array
+          items:
+            type: string
+    CodeLanguageExample:
+      type: object
+      required: [language, code]
+      properties:
+        language:
+          type: string
+        code:
+          type: string
+        explanation:
+          type: ["string", "null"]
+    CodeExampleData:
+      type: object
+      required: [isProgramming]
+      properties:
+        isProgramming:
+          type: boolean
+        description:
+          type: ["string", "null"]
+        examples:
+          type: array
+          items:
+            $ref: "#/components/schemas/CodeLanguageExample"
+    LearningWorkspace:
+      type: object
+      required:
+        - title
+        - description
+        - estimatedStudyTime
+        - difficulty
+        - summary
+        - keyPoints
+        - flashcards
+        - quiz
+        - interviewQuestions
+        - cheatSheet
+        - practiceTips
+        - codeExample
+        - relatedTopics
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        estimatedStudyTime:
+          type: string
+        difficulty:
+          type: string
+          enum: [Beginner, Intermediate, Advanced]
+        summary:
+          type: string
+        keyPoints:
+          type: array
+          items:
+            type: string
+        flashcards:
+          type: array
+          items:
+            $ref: "#/components/schemas/Flashcard"
+        quiz:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizQuestion"
+        interviewQuestions:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterviewQuestion"
+        cheatSheet:
+          type: array
+          items:
+            $ref: "#/components/schemas/CheatSheetSection"
+        practiceTips:
+          type: array
+          items:
+            type: string
+        codeExample:
+          $ref: "#/components/schemas/CodeExampleData"
+        relatedTopics:
+          type: array
+          items:
+            type: string
+    GenerateError:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string

@@ -1,0 +1,405 @@
+You have already built PrepFlow AI.
+
+Now upgrade it into a production-quality application.
+
+===============================
+1. QUIZ IMPROVEMENTS
+===============================
+
+Increase the default quiz size.
+
+Generate between 10 and 12 MCQs.
+
+Every question should contain:
+
+- Question
+- 4 Options
+- Correct Answer
+- Explanation
+
+At the end show:
+
+Score
+
+Accuracy
+
+Review Answers
+
+Retry Wrong Answers
+
+Generate More Questions
+
+===============================
+2. FLASHCARDS
+===============================
+
+Increase flashcards to 10.
+
+Each card must include
+
+Question
+
+Answer
+
+Difficulty
+
+Category
+
+Bookmark
+
+Mark Learned
+
+Progress
+
+Shuffle
+
+===============================
+3. CHEAT SHEET
+===============================
+
+Current cheat sheet is too small.
+
+Improve it.
+
+Generate
+
+Minimum 5 points.
+
+For advanced topics
+
+Generate 6–8 concise revision points.
+
+Each point should be
+
+Short
+
+Interview friendly
+
+Revision friendly
+
+Copyable
+
+===============================
+4. INTERVIEW QUESTIONS
+===============================
+
+Redesign this section.
+
+The first question MUST always be
+
+"What is <topic>?"
+
+Example
+
+Deep Learning
+
+↓
+
+What is Deep Learning?
+
+Definition
+
+Applications
+
+Advantages
+
+Disadvantages
+
+Then include
+
+Basic
+
+Intermediate
+
+Advanced
+
+Scenario based
+
+HR style (if company preparation)
+
+Coding (if programming)
+
+Do NOT generate all 50 questions initially.
+
+Generate the first 10.
+
+Provide a
+
+"Load 10 More"
+
+button.
+
+Continue until 50 questions are available.
+
+This reduces API cost and improves performance.
+
+===============================
+5. CODING EXAMPLES
+===============================
+
+Completely redesign.
+
+If topic is programming
+
+Create tabs.
+
+Hints
+
+Examples
+
+Brute Force
+
+Better Approach
+
+Optimal Approach
+
+Complexity
+
+Dry Run
+
+Java
+
+Python
+
+C++
+
+JavaScript
+
+Every coding problem should include
+
+Problem Statement
+
+Input
+
+Output
+
+Constraints
+
+Hint
+
+Example
+
+Brute Force
+
+Explanation
+
+Time Complexity
+
+Space Complexity
+
+Better Approach
+
+Explanation
+
+Time Complexity
+
+Space Complexity
+
+Optimal Approach
+
+Explanation
+
+Time Complexity
+
+Space Complexity
+
+Comparison Table
+
+Do NOT show all code at once.
+
+Use collapsible tabs.
+
+===============================
+6. REQUEST HANDLING
+===============================
+
+Fix repeated request issues.
+
+Current application sends multiple requests and receives HTTP 429.
+
+Implement
+
+AbortController
+
+Cancel previous request
+
+Ignore stale responses
+
+Disable Generate button while loading
+
+Debounce input
+
+Prevent duplicate submissions
+
+===============================
+7. RATE LIMIT HANDLING
+===============================
+
+When API returns
+
+HTTP 429
+
+Automatically retry using exponential backoff.
+
+Retry after
+
+2 seconds
+
+4 seconds
+
+8 seconds
+
+Maximum
+
+3 retries.
+
+Show
+
+"Too many requests.
+Waiting before retrying..."
+
+If still failing
+
+Show elegant retry screen.
+
+===============================
+8. LOCAL CACHE
+===============================
+
+Cache generated workspaces.
+
+If user searches the same topic again
+
+Load from local storage.
+
+Do not call AI again.
+
+Provide
+
+Refresh with AI
+
+button.
+
+===============================
+9. LOGIN SYSTEM
+===============================
+
+Add authentication.
+
+Navbar
+
+Login button
+
+Clicking Login opens a modal.
+
+Provide
+
+Continue with Google
+
+Continue with Phone Number (OTP)
+
+After successful login
+
+Replace Login with
+
+User Avatar
+
+Dropdown
+
+Profile
+
+Saved Sessions
+
+Logout
+
+Persist login.
+
+===============================
+10. SAVED SESSIONS
+===============================
+
+Each generated topic should be saved.
+
+User can reopen
+
+React Hooks
+
+DBMS
+
+Deep Learning
+
+etc.
+
+===============================
+11. PROFILE PAGE
+===============================
+
+Create
+
+Profile
+
+Study Streak
+
+Sessions
+
+Topics Learned
+
+Flashcards Completed
+
+Quiz Accuracy
+
+Bookmarks
+
+===============================
+12. UI IMPROVEMENTS
+===============================
+
+Increase visual polish.
+
+Improve typography.
+
+Improve spacing.
+
+Improve hover animations.
+
+Improve loading skeletons.
+
+Improve transitions.
+
+Make it feel like
+
+Linear
+
+Notion AI
+
+Perplexity
+
+Never like a college project.
+
+===============================
+13. CODE QUALITY
+===============================
+
+Refactor entire application.
+
+Use
+
+Reusable Components
+
+Custom Hooks
+
+Context API
+
+Clean Folder Structure
+
+Memoization
+
+Lazy Loading
+
+Professional architecture.
+
+Do not break existing functionality.
+
+Keep the UI responsive.
+
+Maintain production quality.

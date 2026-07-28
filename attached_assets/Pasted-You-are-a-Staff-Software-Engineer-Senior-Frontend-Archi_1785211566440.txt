@@ -1,0 +1,653 @@
+You are a Staff Software Engineer, Senior Frontend Architect, Product Designer, and Founding Engineer from a YC-backed AI startup.
+
+Your task is to build a production-quality AI-powered web application.
+
+This is NOT a college assignment.
+This is NOT a CRUD project.
+This is NOT a chatbot.
+
+It should look like a real SaaS product that could launch on Product Hunt tomorrow.
+
+============================================================
+
+PROJECT NAME
+
+PrepFlow AI
+
+Tagline
+
+Turn any topic into an interactive AI learning workspace.
+
+============================================================
+
+PRODUCT VISION
+
+PrepFlow AI is an AI-powered learning workspace.
+
+Users type any topic such as
+
+React Hooks
+Operating Systems
+DBMS
+AWS
+Machine Learning
+LeetCode Two Sum
+TCS Interview Preparation
+Amazon SDE Interview
+Java Collections
+
+The AI automatically generates an entire structured learning workspace.
+
+This is NOT a chatbot.
+
+The user never chats with AI.
+
+The AI simply generates structured JSON.
+
+The frontend transforms that JSON into beautiful interactive modules.
+
+============================================================
+
+TECH STACK
+
+Frontend
+
+React 19
+Vite
+JavaScript
+TailwindCSS
+React Router
+Framer Motion
+Lucide React
+
+Backend
+
+Node.js
+Express
+
+AI
+
+Groq API
+
+Model
+
+openai/gpt-oss-20b
+
+Store API key inside
+
+server/.env
+
+Never expose API key.
+
+============================================================
+
+DESIGN
+
+The UI should NOT look AI-generated.
+
+The UI should look like it was designed by senior product designers.
+
+Use inspiration from
+
+Linear
+
+Notion AI
+
+Perplexity
+
+Raycast
+
+Stripe Dashboard
+
+Arc Browser
+
+Use
+
+Rounded cards
+
+Soft shadows
+
+Excellent spacing
+
+Minimal design
+
+Modern typography
+
+Micro animations
+
+Dark mode first
+
+Light mode support
+
+Responsive
+
+No Bootstrap look
+
+No template look
+
+============================================================
+
+USER FLOW
+
+User enters topic
+
+↓
+
+Frontend validates input
+
+↓
+
+Backend sends prompt to Groq
+
+↓
+
+Groq returns ONLY JSON
+
+↓
+
+Backend validates JSON
+
+↓
+
+Frontend renders modules
+
+============================================================
+
+PROMPT TO AI
+
+Always instruct the AI:
+
+Return ONLY valid JSON.
+
+Never return markdown.
+
+Never explain.
+
+Never wrap JSON inside triple backticks.
+
+Return exactly this schema.
+
+{
+"title":"",
+"description":"",
+"estimatedStudyTime":"",
+"difficulty":"",
+"summary":"",
+"keyPoints":[],
+"flashcards":[],
+"quiz":[],
+"interviewQuestions":[],
+"cheatSheet":[],
+"practiceTips":[],
+"codeExample":{},
+"relatedTopics":[]
+}
+
+============================================================
+
+APPLICATION PAGES
+
+1.
+
+Landing Page
+
+Modern Hero
+
+Beautiful CTA
+
+Large textarea
+
+Example prompts
+
+Generate button
+
+Feature cards
+
+Responsive
+
+------------------------------------------------------------
+
+2.
+
+Learning Workspace
+
+This is the main page.
+
+It contains
+
+Overview
+
+Summary
+
+Flashcards
+
+Quiz
+
+Interview Questions
+
+Cheat Sheet
+
+Code Example
+
+Related Topics
+
+Personal Notes
+
+============================================================
+
+MODULE 1
+
+Overview
+
+Show
+
+Topic
+
+Difficulty
+
+Estimated Study Time
+
+Number of flashcards
+
+Number of quiz questions
+
+Progress
+
+============================================================
+
+MODULE 2
+
+Summary
+
+Beautiful card
+
+Estimated reading time
+
+Expandable
+
+Copy button
+
+============================================================
+
+MODULE 3
+
+Flashcards
+
+3D Flip animation
+
+Previous
+
+Next
+
+Progress
+
+Bookmark
+
+Mark Learned
+
+Shuffle
+
+Keyboard shortcuts
+
+============================================================
+
+MODULE 4
+
+Quiz
+
+One question at a time
+
+Multiple choice
+
+Animated transitions
+
+Score
+
+Accuracy
+
+Retry Wrong Answers
+
+Review Answers
+
+Confetti on 100%
+
+============================================================
+
+MODULE 5
+
+Interview Questions
+
+Generate interview questions related to the topic.
+
+Example
+
+React
+
+↓
+
+Difference between useMemo and useCallback
+
+Operating Systems
+
+↓
+
+Difference between Process and Thread
+
+TCS Interview
+
+↓
+
+HR Questions
+
+Technical Questions
+
+============================================================
+
+MODULE 6
+
+Cheat Sheet
+
+Short revision notes.
+
+One page.
+
+============================================================
+
+MODULE 7
+
+Code Example
+
+If the topic is programming,
+
+show
+
+Java
+
+Python
+
+C++
+
+JavaScript
+
+code examples with syntax highlighting.
+
+If topic is non-programming
+
+hide this module.
+
+============================================================
+
+MODULE 8
+
+Related Topics
+
+AI suggests similar concepts.
+
+Example
+
+React Hooks
+
+↓
+
+React State
+
+React Context
+
+Redux
+
+Custom Hooks
+
+============================================================
+
+MODULE 9
+
+Personal Notes
+
+User can type notes.
+
+Automatically save locally.
+
+============================================================
+
+SEARCH
+
+Search inside
+
+Flashcards
+
+Interview Questions
+
+Quiz
+
+============================================================
+
+LOCAL STORAGE
+
+Save sessions automatically.
+
+Restore previous sessions.
+
+Never lose data.
+
+============================================================
+
+EXPORT
+
+Export
+
+Markdown
+
+JSON
+
+PDF
+
+============================================================
+
+SETTINGS
+
+Dark Mode
+
+Light Mode
+
+Clear History
+
+Animation Toggle
+
+============================================================
+
+ERROR HANDLING
+
+Never crash.
+
+Handle
+
+Malformed JSON
+
+Wrong JSON schema
+
+Empty response
+
+Timeout
+
+Network error
+
+Rate limit
+
+Show elegant retry screen.
+
+============================================================
+
+LOADING
+
+Skeleton loaders
+
+Animated placeholders
+
+Progress messages
+
+============================================================
+
+BACKEND
+
+Use Express.
+
+POST /api/generate
+
+Read topic
+
+Call Groq
+
+Validate response
+
+Repair JSON if possible
+
+Return clean JSON
+
+Never send raw AI response.
+
+============================================================
+
+VALIDATION
+
+Validate
+
+title
+
+summary
+
+flashcards
+
+quiz
+
+If validation fails
+
+Return
+
+{
+success:false,
+message:"Unable to generate study material."
+}
+
+============================================================
+
+FOLDER STRUCTURE
+
+client/
+
+components/
+
+pages/
+
+hooks/
+
+context/
+
+services/
+
+utils/
+
+assets/
+
+styles/
+
+server/
+
+routes/
+
+controllers/
+
+services/
+
+validators/
+
+middleware/
+
+utils/
+
+============================================================
+
+CODE QUALITY
+
+Senior-level architecture.
+
+Reusable components.
+
+Custom hooks.
+
+No duplicated code.
+
+Meaningful variable names.
+
+Clean folder structure.
+
+Professional comments.
+
+============================================================
+
+PERFORMANCE
+
+Lazy loading
+
+Memoization
+
+Debouncing
+
+AbortController
+
+Prevent stale API responses
+
+============================================================
+
+ACCESSIBILITY
+
+Semantic HTML
+
+ARIA labels
+
+Keyboard navigation
+
+Focus rings
+
+============================================================
+
+README
+
+Professional README including
+
+Architecture
+
+Features
+
+Folder structure
+
+Screenshots section
+
+Installation
+
+Environment variables
+
+AI usage
+
+Known limitations
+
+Future roadmap
+
+============================================================
+
+IMPORTANT
+
+DO NOT BUILD A CHATBOT.
+
+The application must NEVER display raw AI conversation.
+
+The AI should ONLY return structured JSON.
+
+The frontend must transform the JSON into interactive UI components.
+
+The application should feel like a complete learning platform rather than an AI chat interface.
+
+============================================================
+
+FINAL GOAL
+
+When a recruiter opens this project, it should feel like a polished startup product, not a typical internship assignment. Every interaction, animation, layout, and code structure should reflect production-quality engineering and thoughtful product design.
