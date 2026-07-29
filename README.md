@@ -1,139 +1,200 @@
-# 🚀 PrepFlow AI — Flam Frontend Internship Submission
+🚀 PrepFlow AI – AI-Powered Study Workspace
+Flam Frontend Engineering Internship Submission
 
-> **AI-Powered Interactive Study Workspace & Technical Interview Preparation Tool**  
-> Built for the **Flam Frontend Engineering Internship Assignment**.
+An AI-powered interactive learning platform that transforms any topic into a structured study workspace with summaries, flashcards, quizzes, interview preparation, coding examples, and revision notes.
 
----
+🌐 Live Demo: https://prepflow-platform-prepflow.vercel.app
 
-## 📌 Project Overview
+🎥 Demo Video: https://drive.google.com/file/d/1rPAu2SI2cJ6SdJy2bLnOZGnpOh36s5BA/view?usp=drivesdk
 
-**PrepFlow AI** is a modular, AI-powered interactive study workspace that turns any user-defined topic (e.g. *"Binary Search Trees"*, *"React Hooks"*, *"PostgreSQL Indexing"*) into an instant, structured learning kit. 
+📖 Overview
 
-Unlike traditional LLM wrappers that request massive single-payload responses (resulting in rate limits, latency spikes, and timeouts), PrepFlow AI utilizes a **Modular Frontend-Driven Architecture**:
-1. **Instant Overview (~1-2s)**: Only fetches core summary and difficulty metadata first.
-2. **Lazy On-Demand Streaming**: Fetches Flashcards, Quizzes, Interview Q&As, Cheat Sheets, and Multi-Language Code Examples on demand when opened.
-3. **Client-Side Deduplicated Request Queue**: Single-concurrency queue with `AbortController` cancellation and IndexedDB persistent caching.
+PrepFlow AI is designed to make technical learning faster and more interactive.
 
----
+Instead of generating an entire workspace in one expensive AI request, the application uses a modular, frontend-first architecture where each learning module is generated independently. This improves responsiveness, reduces API costs, and provides a smoother user experience.
 
-## 🎯 Rubric Alignment & Scores
+✨ Features
+📚 AI Study Workspace
+AI-generated topic overview
+Executive summary
+Learning roadmap
+Difficulty estimation
+Key concepts
+🧠 Flashcards
+Interactive flashcards
+Shuffle mode
+Bookmark support
+Progress tracking
+Keyboard navigation
+🎯 Quiz Module
+Multiple-choice questions
+Instant feedback
+Score tracking
+Retry incorrect answers
+Performance analytics
+💻 Coding Examples
 
-This submission is specifically engineered to address the **Flam Frontend Evaluation Rubric**:
+Supports
 
-| Rubric Criteria | Score | Implementation Highlights |
-| :--- | :---: | :--- |
-| **1. React & Frontend Architecture (25%)** | `24 / 25` | Strict TypeScript types, custom hooks (`useModuleLoader`), monorepo architecture (`pnpm`), decoupled component hierarchy, Framer Motion animations. |
-| **2. AI Integration & Data Handling (25%)** | `24 / 25` | Express AI proxy isolating API keys, Groq multi-model fallback cascade, modular schema splitting, single-concurrency request queueing. |
-| **3. Handling Bad AI Output (20%)** | `19 / 20` | Regex JSON repair (`repairJson`), runtime schema checks, 429 rate limit retries, fallback UI cards, grace-period error boundaries. |
-| **4. UI/UX & Product Sense (15%)** | `15 / 15` | Modern dark mode glassmorphism UI, 3D flip flashcard physics, keyboard shortcuts (`Space`/`Arrows`), Prism.js code highlight, loading skeletons. |
-| **5. Communication & Trade-Offs (15%)** | `15 / 15` | In-depth technical trade-off documentation, clear architecture design diagrams, comprehensive README. |
-| **TOTAL SCORE** | **`97 / 100`** | **Top 1% Candidate Submission** |
+C++
+Java
+Python
+JavaScript
 
----
+Includes
 
-## 🏗️ System Architecture & Engineering Design
+Brute Force
+Better Approach
+Optimal Solution
+Time & Space Complexity
+Syntax Highlighting
+🎤 Interview Preparation
+Technical Questions
+Coding Questions
+HR Questions
+Scenario-based Questions
+Model Answers
+📖 Cheat Sheet
+Quick revision notes
+Important formulas
+Common mistakes
+Copy to clipboard
+📊 Dashboard
+Study history
+Learning progress
+Quiz performance
+Saved topics
+⚡ Engineering Highlights
+Modular AI Generation
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          PREPFLOW AI FRONTEND                          │
-│                          (React 19 + Vite)                             │
-└──────────────┬─────────────────────────┬───────────────────────────────┘
-               │                         │
-      IndexedDB Cache (24h)     RequestQueue (Single-Concurrency)
-    (Instant Offline Access)     (In-Flight Deduplication & Abort)
-               │                         │
-               └────────────┬────────────┘
-                            │ HTTP POST Requests
-                            ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                        EXPRESS AI PROXY BACKEND                        │
-│             (Key Security + LLM Cascade + JSON Sanitization)           │
-└───────────────────────────┬────────────────────────────────────────────┘
-                            │ Groq SDK (Model Fallback Cascade)
-                            ▼
-           [ llama-3.3-70b-versatile ] ──(429 Rate Limit)──► [ llama-3.1-8b-instant ]
-                                                                      │
-                                                                 (Fallback)
-                                                                      ▼
-                                                            [ llama-3.2-3b-preview ]
-```
+Each module is generated independently.
 
-### Why a Backend Proxy is Used (Security & Resilience)
-The Express backend (`artifacts/api-server`) serves as a **lightweight, secure proxy**:
-1. **API Key Security**: `GROQ_API_KEY` is kept server-side and never exposed to client bundles.
-2. **Model Cascade Failover**: Groq model tiers auto-fallback on HTTP 429 rate limits without breaking client requests.
-3. **JSON Repair**: Raw LLM output is sanitized (`repairJson`) to remove stray markdown fences and fix structural syntax before sending to the client.
+Overview
+Flashcards
+Quiz
+Interview Questions
+Coding Examples
+Cheat Sheet
 
----
+Benefits
 
-## 💡 Technical Decisions & Trade-Offs (Interview Preparation)
+Faster loading
+Better fault tolerance
+Easy retries
+Lower API usage
+IndexedDB Caching
 
-### 1. Client-Side Request Queue vs Parallel Fetching
-- **Decision**: Built a custom single-concurrency queue (`request-queue.ts`).
-- **Why**: Parallel requests for 7 modules instantly hit Groq free-tier rate limits (6,000 TPM / 100,000 TPD).
-- **Trade-off**: Slightly longer sequential load times for background prefetching, but achieves **100% request completion reliability** without 429 errors.
+Generated workspaces are cached locally.
 
-### 2. IndexedDB (24h TTL) vs React State Only
-- **Decision**: Persist responses in browser `IndexedDB` via `module-cache.ts`.
-- **Why**: Navigating between learning tabs or revisiting historical topics loads data instantly (0ms latency) without hitting the network or LLM API.
-- **Trade-off**: Requires explicit key normalization (`topic:module`) and stale data eviction policies.
+Benefits
 
-### 3. Modular Generation vs Monolithic Generation
-- **Decision**: Split content into individual endpoints (`/api/overview`, `/api/flashcards`, `/api/quiz`, `/api/code`).
-- **Why**: Monolithic payloads caused 15+ second timeouts and frequent rate-limit failures.
-- **Trade-off**: Requires client-side orchestration using `useModuleLoader`.
+Faster repeat visits
+Reduced API calls
+Better user experience
+Request Queue
 
----
+Instead of sending multiple AI requests simultaneously, requests are processed sequentially.
 
-## 💻 Features & Key Capabilities
+Benefits
 
-- **Interactive 3D Flashcards**: Framer Motion spring physics, keyboard shortcuts (`Space` to flip, `←/→` to navigate), deck shuffle, progress indicators, bookmarking.
-- **MCQ Quiz Engine**: Interactive question feedback, score breakdown, retry wrong answers mode, confetti celebration on high scores.
-- **Multi-Language Code Implementation**: On-demand generation of Optimal, Better, and Brute-Force approaches in Java, Python, C++, and JavaScript with Prism.js code syntax highlighting.
-- **Revision Cheat Sheet**: Categorized bullet points with copy-to-clipboard for quick interview revision.
-- **Session History & Profile Stats**: View past study topics, quiz accuracy percentages, day streak counters, and saved bookmarks.
-- **Export Tools**: Export full study workspace to Markdown (`.md`), JSON, or print to PDF.
+Prevents duplicate requests
+Handles rate limits
+Improves reliability
+Secure Backend Proxy
 
----
+The application uses an Express proxy to protect API keys.
 
-## 🛠️ Local Development & Setup
+Responsibilities
 
-### Prerequisites
-- Node.js >= 18
-- pnpm >= 8
+Secure API access
+Model fallback
+JSON validation
+Error handling
+🏗️ Architecture
+                 React 19 + Vite
+                         │
+        ┌────────────────┴────────────────┐
+        │                                 │
+  IndexedDB Cache                 Request Queue
+        │                                 │
+        └──────────────┬──────────────────┘
+                       │
+                 Express API Proxy
+                       │
+                 AI Language Model
+🛡️ Error Handling
 
-### Steps
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your-username/PrepFlow-AI.git
-   cd PrepFlow-AI
-   ```
-2. **Install dependencies**:
-   ```bash
-   pnpm install
-   ```
-3. **Set up Environment Variables**:
-   Create a `.env` file in the root directory:
-   ```env
-   GROQ_API_KEY=your_groq_api_key_here
-   ```
-4. **Start Development Server**:
-   ```bash
-   node run-local.js
-   ```
-   Open **[http://localhost:3000](http://localhost:3000)** in your browser.
+The application handles
 
-5. **Typecheck & Quality Checks**:
-   ```bash
-   pnpm run typecheck
-   ```
+HTTP 429 rate limits
+Invalid AI responses
+Duplicate requests
+Empty AI output
+Topic switching
+Offline caching
+Request cancellation
+🛠️ Tech Stack
+Frontend
+React 19
+TypeScript
+Vite
+Tailwind CSS
+Framer Motion
+Prism.js
+Backend
+Node.js
+Express.js
+Groq API
+Browser APIs
+IndexedDB
+AbortController
+📁 Project Structure
+prepflow-platform/
 
----
+├── artifacts/
+│   ├── prepflow/
+│   └── api-server/
+│
+├── lib/
+├── scripts/
+├── package.json
+├── pnpm-workspace.yaml
+└── README.md
+🚀 Getting Started
+Clone Repository
+git clone https://github.com/suhashkowsick1234/prepflow-platform.git
+Install
+pnpm install
+Environment
+GROQ_API_KEY=your_api_key
+Run
+node run-local.js
 
-## ⚡ Key Edge Cases Handled
+Visit
 
-1. **Groq Model Rate Limits (HTTP 429)**: Handled via automatic model cascading fallback (`llama-3.3-70b-versatile` → `llama-3.1-8b-instant` → `llama-3.2-3b-preview`).
-2. **Malformed JSON Markdown Fences**: Handled via `repairJson()` string sanitizer stripping stray backticks before `JSON.parse()`.
-3. **In-Flight Request Deduplication**: Reuses active in-flight promises when a user switches tabs while background prefetching is running.
-4. **Topic Switching Cancellation**: Invokes `AbortController.abort()` to terminate active fetch requests when the user switches topics.
-5. **Non-Programming Topics**: Automatically detects conceptual topics (e.g. "Operating Systems Theory") and displays a clean conceptual information card in the Code module instead of failing.
+http://localhost:3000
+📌 Key Technical Decisions
+Modular AI generation instead of one large request.
+IndexedDB caching for improved performance.
+Request queue to avoid API rate limits.
+Secure Express proxy for API key protection.
+Responsive, component-based frontend architecture.
+🎯 Why This Project?
+
+PrepFlow AI demonstrates practical frontend engineering skills through:
+
+Component-driven architecture
+AI integration
+State management
+Performance optimisation
+Responsive UI
+Error handling
+Caching strategies
+Modern React development
+📬 Contact
+
+Suhash Kowsick Karri
+
+GitHub: https://github.com/suhashkowsick1234
+Live Demo: https://prepflow-platform-prepflow.vercel.app
+Demo Video: https://drive.google.com/file/d/1rPAu2SI2cJ6SdJy2bLnOZGnpOh36s5BA/view?usp=drivesdk
