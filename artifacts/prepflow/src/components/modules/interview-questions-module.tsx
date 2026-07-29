@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { setCachedModule } from "@/lib/module-cache";
+import { safeFetchJson } from "@/lib/safe-fetch";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ChevronDown, MessageSquare, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,7 +33,7 @@ export function InterviewQuestionsModule({ workspace }: { workspace: LearningWor
     setErrorMsg(null);
 
     try {
-      const response = await fetch("/api/interview", {
+      const result = await safeFetchJson("/api/interview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -41,12 +42,11 @@ export function InterviewQuestionsModule({ workspace }: { workspace: LearningWor
         }),
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.message || "Failed to load more questions.");
+      if (!result.ok) {
+        throw new Error(result.error || "Failed to load more questions.");
       }
 
-      const newQs = data?.interviewQuestions || [];
+      const newQs = result.data?.interviewQuestions || [];
       if (Array.isArray(newQs) && newQs.length > 0) {
         const updated = [...questions, ...newQs];
         setQuestions(updated);

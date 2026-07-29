@@ -31,6 +31,8 @@ const EXAMPLE_TOPICS = [
   "PostgreSQL Indexing",
 ];
 
+export const PENDING_TOPIC_STORAGE_KEY = "prepflow_pending_topic";
+
 export function LandingPage() {
   const [, setLocation] = useLocation();
   const [topic, setTopic] = useState("");
@@ -47,8 +49,9 @@ export function LandingPage() {
     if (!trimmed || loading) return;
 
     if (!isLoggedIn) {
+      sessionStorage.setItem(PENDING_TOPIC_STORAGE_KEY, trimmed);
       pendingTopicRef.current = trimmed;
-      setError("Please sign in or sign up with Google or Phone number to generate a workspace.");
+      setError("Please sign in or sign up to generate a workspace.");
       openLoginModal();
       return;
     }
@@ -82,11 +85,15 @@ export function LandingPage() {
 
   // Auto-generate topic seamlessly after successful login
   React.useEffect(() => {
-    if (isLoggedIn && pendingTopicRef.current) {
-      const topicToGen = pendingTopicRef.current;
-      pendingTopicRef.current = null;
-      setError(null);
-      handleGenerate(topicToGen);
+    if (isLoggedIn) {
+      const storedPending = sessionStorage.getItem(PENDING_TOPIC_STORAGE_KEY) || pendingTopicRef.current;
+      if (storedPending) {
+        sessionStorage.removeItem(PENDING_TOPIC_STORAGE_KEY);
+        pendingTopicRef.current = null;
+        setError(null);
+        setTopic(storedPending);
+        handleGenerate(storedPending);
+      }
     }
   }, [isLoggedIn, handleGenerate]);
 
@@ -163,7 +170,7 @@ export function LandingPage() {
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Generating Overview...
+                      <Loader2 className="w-4 h-4 animate-spin" /> Generating Workspace...
                     </>
                   ) : (
                     <>

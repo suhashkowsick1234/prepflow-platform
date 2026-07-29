@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { setCachedModule } from "@/lib/module-cache";
+import { safeFetchJson } from "@/lib/safe-fetch";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2,
@@ -354,17 +355,16 @@ export function QuizModule({
 
     setIsGeneratingMore(true);
     try {
-      const res = await fetch("/api/quiz", {
+      const result = await safeFetchJson("/api/quiz", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic: workspace.title }),
       });
-      const data = await res.json();
-      if (Array.isArray(data?.quiz) && data.quiz.length > 0) {
+      if (result.ok && Array.isArray(result.data?.quiz) && result.data.quiz.length > 0) {
         // Save the updated quiz to IndexedDB cache!
-        await setCachedModule(workspace.title, "quiz", { quiz: data.quiz });
+        await setCachedModule(workspace.title, "quiz", { quiz: result.data.quiz });
 
-        setActiveQuiz(data.quiz);
+        setActiveQuiz(result.data.quiz);
         setCurrentIndex(0);
         setSelectedOption(null);
         setShowFeedback(false);
@@ -373,7 +373,7 @@ export function QuizModule({
         setView("quiz");
 
         if (currentSessionId) {
-          updateSessionWorkspace(currentSessionId, { quiz: data.quiz });
+          updateSessionWorkspace(currentSessionId, { quiz: result.data.quiz });
         }
       }
     } catch (e) {

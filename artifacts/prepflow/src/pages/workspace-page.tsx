@@ -4,6 +4,7 @@ import { Layout } from "@/components/layout";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { useAuth } from "@/lib/auth-context";
 import { useModuleLoader, ModuleName } from "@/hooks/use-module-loader";
+import { safeFetchJson } from "@/lib/safe-fetch";
 import { ModuleSkeleton } from "@/components/ui/module-skeleton";
 import { ModuleError } from "@/components/ui/module-error";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -33,6 +34,7 @@ import { CheatSheetModule } from "@/components/modules/cheat-sheet-module";
 import { CodeExamplesModule } from "@/components/modules/code-examples-module";
 import { PersonalNotesModule } from "@/components/modules/personal-notes-module";
 import { RelatedTopicsModule } from "@/components/modules/related-topics-module";
+import { PENDING_TOPIC_STORAGE_KEY } from "./landing-page";
 
 type ModuleType =
   | "overview"
@@ -74,32 +76,32 @@ export function WorkspacePage() {
   useEffect(() => {
     if (!currentSessionId || !flashcardsLoader.data?.flashcards?.length) return;
     updateSessionWorkspace(currentSessionId, { flashcards: flashcardsLoader.data.flashcards });
-  }, [currentSessionId, flashcardsLoader.data]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentSessionId, flashcardsLoader.data]);
 
   useEffect(() => {
     if (!currentSessionId || !quizLoader.data?.quiz?.length) return;
     updateSessionWorkspace(currentSessionId, { quiz: quizLoader.data.quiz });
-  }, [currentSessionId, quizLoader.data]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentSessionId, quizLoader.data]);
 
   useEffect(() => {
     if (!currentSessionId || !interviewLoader.data?.interviewQuestions?.length) return;
     updateSessionWorkspace(currentSessionId, { interviewQuestions: interviewLoader.data.interviewQuestions });
-  }, [currentSessionId, interviewLoader.data]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentSessionId, interviewLoader.data]);
 
   useEffect(() => {
     if (!currentSessionId || !cheatSheetLoader.data?.cheatSheet?.length) return;
     updateSessionWorkspace(currentSessionId, { cheatSheet: cheatSheetLoader.data.cheatSheet });
-  }, [currentSessionId, cheatSheetLoader.data]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentSessionId, cheatSheetLoader.data]);
 
   useEffect(() => {
     if (!currentSessionId || !codeLoader.data?.codeExample) return;
     updateSessionWorkspace(currentSessionId, { codeExample: codeLoader.data.codeExample });
-  }, [currentSessionId, codeLoader.data]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentSessionId, codeLoader.data]);
 
   useEffect(() => {
     if (!currentSessionId || !relatedLoader.data?.relatedTopics?.length) return;
     updateSessionWorkspace(currentSessionId, { relatedTopics: relatedLoader.data.relatedTopics });
-  }, [currentSessionId, relatedLoader.data]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentSessionId, relatedLoader.data]);
 
   const { isLoggedIn, openLoginModal } = useAuth();
 
@@ -107,22 +109,18 @@ export function WorkspacePage() {
     const trimmed = newTopic.trim();
     if (!trimmed) return;
     if (!isLoggedIn) {
+      sessionStorage.setItem(PENDING_TOPIC_STORAGE_KEY, trimmed);
       openLoginModal();
       return;
     }
-    try {
-      const res = await fetch("/api/overview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: trimmed }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        saveSession(trimmed, data);
-        setActiveModule("overview");
-      }
-    } catch {
-      // ignore
+    const result = await safeFetchJson("/api/overview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic: trimmed }),
+    });
+    if (result.ok && result.data) {
+      saveSession(trimmed, result.data);
+      setActiveModule("overview");
     }
   }, [isLoggedIn, openLoginModal, saveSession]);
 

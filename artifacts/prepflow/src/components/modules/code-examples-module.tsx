@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Code2, Copy, Check, FileText, Loader2, Sparkles, Clock, HardDrive, AlertTriangle } from "lucide-react";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { setCachedModule } from "@/lib/module-cache";
+import { safeFetchJson } from "@/lib/safe-fetch";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -128,7 +129,7 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
     setGenerateError(null);
 
     try {
-      const res = await fetch("/api/code", {
+      const result = await safeFetchJson("/api/code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -137,8 +138,13 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
         }),
       });
 
-      const data = await res.json();
-      const returnedExample = data?.codeExample;
+      if (!result.ok) {
+        setGenerateError(result.error ?? "Failed to generate code example.");
+        setIsGenerating(false);
+        return;
+      }
+
+      const returnedExample = result.data?.codeExample;
 
       if (returnedExample && typeof returnedExample === "object") {
         const updatedCodeExample = {

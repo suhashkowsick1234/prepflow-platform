@@ -1,4 +1,5 @@
 import { ModuleName, getCachedModule, setCachedModule } from "./module-cache";
+import { safeFetchJson } from "./safe-fetch";
 
 /**
  * ARCHITECTURAL DESIGN DECISION: Custom Single-Concurrency Request Queue
@@ -10,15 +11,6 @@ import { ModuleName, getCachedModule, setCachedModule } from "./module-cache";
  *    network requests for the same topic + module.
  * 3. Topic Cancellation: When a user switches topics mid-stream, active in-flight controllers are aborted immediately
  *    to preserve network bandwidth and API quota.
- * 
- * ALTERNATIVE APPROACHES CONSIDERED:
- * - Axios Interceptors: Lacks global topic-based batch cancellation and fine-grained queuing concurrency.
- * - TanStack Query / React Query: Great for standard REST caching, but doesn't natively handle sequential execution
- *   queuing across independent hook instances without complex mutex plugins.
- * 
- * TRADE-OFFS:
- * - Single concurrency (`maxActive = 1`) increases end-to-end load time for all 7 modules, but eliminates 429 errors
- *   and ensures 100% completion reliability.
  */
 
 interface QueueTask {
@@ -162,22 +154,20 @@ class RequestQueue {
       }
 
       try {
-        const res = await fetch(task.endpoint, {
+        const result = await safeFetchJson(task.endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(task.body),
           signal: task.controller.signal,
         });
 
-        const data = await res.json();
-
-        if (!res.ok) {
-          const err = new Error(data?.message ?? `HTTP ${res.status}`);
-          (err as any).status = res.status;
+        if (!result.ok) {
+          const err = new Error(result.error ?? `HTTP ${result.status}`);
+          (err as any).status = result.status;
           throw err;
         }
 
-        return data;
+        return result.data;
       } catch (err: any) {
         if (task.controller.signal.aborted || err.name === "AbortError") {
           throw new Error("Aborted");
