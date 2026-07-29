@@ -1,14 +1,14 @@
-import app from "./app";
-import { logger } from "./lib/logger";
+import app from "./app.js";
+import { logger } from "./lib/logger.js";
 
 const isVercel = process.env.VERCEL === "1";
 
 if (!isVercel) {
-  const rawPort = process.env["PORT"];
+  const rawPort = process.env.PORT;
 
   if (!rawPort) {
     throw new Error(
-      "PORT environment variable is required but was not provided.",
+      "PORT environment variable is required but was not provided."
     );
   }
 
@@ -18,7 +18,7 @@ if (!isVercel) {
     throw new Error(`Invalid PORT value: "${rawPort}"`);
   }
 
-  app.listen(port, (err) => {
+  app.listen(port, (err?: Error) => {
     if (err) {
       logger.error({ err }, "Error listening on port");
       process.exit(1);
@@ -29,4 +29,3 @@ if (!isVercel) {
 }
 
 export default app;
-
