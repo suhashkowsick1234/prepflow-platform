@@ -66,7 +66,9 @@ class RequestQueue {
 
     // 1. Check IndexedDB cache first
     const cached = await getCachedModule<T>(topic, module);
-    if (cached) return cached;
+    if (cached && validateTopicRelevance(cached, topic)) {
+      return cached;
+    }
 
     const id = `${topic.trim().toLowerCase()}:${module}`;
 
