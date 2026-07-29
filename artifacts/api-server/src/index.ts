@@ -1,22 +1,31 @@
-import { Router, type IRouter } from "express";
-import healthRouter from "./health";
-import overviewRouter from "./overview";
-import flashcardsRouter from "./flashcards";
-import quizRouter from "./quiz";
-import interviewRouter from "./interview";
-import cheatsheetRouter from "./cheatsheet";
-import codeRouter from "./code";
-import relatedRouter from "./related";
+import app from "./app";
+import { logger } from "./lib/logger";
 
-const router: IRouter = Router();
+const isVercel = process.env.VERCEL === "1";
 
-router.use(healthRouter);
-router.use(overviewRouter);
-router.use(flashcardsRouter);
-router.use(quizRouter);
-router.use(interviewRouter);
-router.use(cheatsheetRouter);
-router.use(codeRouter);
-router.use(relatedRouter);
+if (!isVercel) {
+  const rawPort = process.env["PORT"];
 
-export default router;
+  if (!rawPort) {
+    throw new Error(
+      "PORT environment variable is required but was not provided.",
+    );
+  }
+
+  const port = Number(rawPort);
+
+  if (Number.isNaN(port) || port <= 0) {
+    throw new Error(`Invalid PORT value: "${rawPort}"`);
+  }
+
+  app.listen(port, (err) => {
+    if (err) {
+      logger.error({ err }, "Error listening on port");
+      process.exit(1);
+    }
+
+    logger.info({ port }, "Server listening");
+  });
+}
+
+export default app;
