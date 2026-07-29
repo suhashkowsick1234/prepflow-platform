@@ -897,6 +897,164 @@ function threeSum(nums) {
 }
 `;
 
+  const betterCpp = `#include <bits/stdc++.h>
+using namespace std;
+
+// 3Sum Better Approach: Hash Set - O(N^2) Time, O(N) Space
+class Solution {
+public:
+    vector<vector<int>> threeSum(vector<int>& nums) {
+        int n = nums.size();
+        set<vector<int>> res;
+        for (int i = 0; i < n - 2; i++) {
+            unordered_set<int> seen;
+            for (int j = i + 1; j < n; j++) {
+                int complement = -nums[i] - nums[j];
+                if (seen.count(complement)) {
+                    vector<int> triplet = {nums[i], nums[j], complement};
+                    sort(triplet.begin(), triplet.end());
+                    res.insert(triplet);
+                }
+                seen.insert(nums[j]);
+            }
+        }
+        return vector<vector<int>>(res.begin(), res.end());
+    }
+};`;
+
+  const betterJava = `import java.util.*;
+
+// 3Sum Better Approach: Hash Set - O(N^2) Time, O(N) Space
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        Set<List<Integer>> res = new HashSet<>();
+        int n = nums.length;
+        for (int i = 0; i < n - 2; i++) {
+            Set<Integer> seen = new HashSet<>();
+            for (int j = i + 1; j < n; j++) {
+                int complement = -nums[i] - nums[j];
+                if (seen.contains(complement)) {
+                    List<Integer> triplet = Arrays.asList(nums[i], nums[j], complement);
+                    Collections.sort(triplet);
+                    res.add(triplet);
+                }
+                seen.add(nums[j]);
+            }
+        }
+        return new ArrayList<>(res);
+    }
+}`;
+
+  const betterPython = `# 3Sum Better Approach: Hash Set - O(N^2) Time, O(N) Space
+class Solution:
+    def threeSum(self, nums: list[int]) -> list[list[int]]:
+        res = set()
+        n = len(nums)
+        for i in range(n - 2):
+            seen = set()
+            for j in range(i + 1, n):
+                comp = -nums[i] - nums[j]
+                if comp in seen:
+                    res.add(tuple(sorted([nums[i], nums[j], comp])))
+                seen.add(nums[j])
+        return [list(t) for t in res]
+`;
+
+  const betterJs = `// 3Sum Better Approach: Hash Set - O(N^2) Time, O(N) Space
+function threeSum(nums) {
+  const res = new Set();
+  const n = nums.length;
+  for (let i = 0; i < n - 2; i++) {
+    const seen = new Set();
+    for (let j = i + 1; j < n; j++) {
+      const comp = -nums[i] - nums[j];
+      if (seen.has(comp)) {
+        const triplet = [nums[i], nums[j], comp].sort((a, b) => a - b).join(",");
+        res.add(triplet);
+      }
+      seen.add(nums[j]);
+    }
+  }
+  return Array.from(res).map(s => s.split(",").map(Number));
+}
+`;
+
+  const bruteCpp = `#include <bits/stdc++.h>
+using namespace std;
+
+// 3Sum Brute Force: Triple Nested Loop - O(N^3) Time, O(1) Space
+class Solution {
+public:
+    vector<vector<int>> threeSum(vector<int>& nums) {
+        int n = nums.size();
+        set<vector<int>> st;
+        for (int i = 0; i < n - 2; i++) {
+            for (int j = i + 1; j < n - 1; j++) {
+                for (int k = j + 1; k < n; k++) {
+                    if (nums[i] + nums[j] + nums[k] == 0) {
+                        vector<int> triplet = {nums[i], nums[j], nums[k]};
+                        sort(triplet.begin(), triplet.end());
+                        st.insert(triplet);
+                    }
+                }
+            }
+        }
+        return vector<vector<int>>(st.begin(), st.end());
+    }
+};`;
+
+  const bruteJava = `import java.util.*;
+
+// 3Sum Brute Force: Triple Nested Loop - O(N^3) Time, O(1) Space
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        Set<List<Integer>> st = new HashSet<>();
+        int n = nums.length;
+        for (int i = 0; i < n - 2; i++) {
+            for (int j = i + 1; j < n - 1; j++) {
+                for (int k = j + 1; k < n; k++) {
+                    if (nums[i] + nums[j] + nums[k] == 0) {
+                        List<Integer> triplet = Arrays.asList(nums[i], nums[j], nums[k]);
+                        Collections.sort(triplet);
+                        st.add(triplet);
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(st);
+    }
+}`;
+
+  const brutePython = `# 3Sum Brute Force: Triple Nested Loop - O(N^3) Time, O(1) Space
+class Solution:
+    def threeSum(self, nums: list[int]) -> list[list[int]]:
+        res = set()
+        n = len(nums)
+        for i in range(n - 2):
+            for j in range(i + 1, n - 1):
+                for k in range(j + 1, n):
+                    if nums[i] + nums[j] + nums[k] == 0:
+                        res.add(tuple(sorted([nums[i], nums[j], nums[k]])))
+        return [list(t) for t in res]
+`;
+
+  const bruteJs = `// 3Sum Brute Force: Triple Nested Loop - O(N^3) Time, O(1) Space
+function threeSum(nums) {
+  const res = new Set();
+  const n = nums.length;
+  for (let i = 0; i < n - 2; i++) {
+    for (let j = i + 1; j < n - 1; j++) {
+      for (let k = j + 1; k < n; k++) {
+        if (nums[i] + nums[j] + nums[k] === 0) {
+          res.add([nums[i], nums[j], nums[k]].sort((a, b) => a - b).join(","));
+        }
+      }
+    }
+  }
+  return Array.from(res).map(s => s.split(",").map(Number));
+}
+`;
+
   const optimalObj = {
     title: `Optimal Approach (Sorting + Two Pointers) for ${t}`,
     timeComplexity: "O(N²)",
@@ -918,13 +1076,55 @@ function threeSum(nums) {
     ]
   };
 
+  const betterObj = {
+    title: `Better Approach (Hash Set Complement Search) for ${t}`,
+    timeComplexity: "O(N²)",
+    timeExplanation: `Outer loop fixes nums[i], inner loop searches hash set for complement = -nums[i] - nums[j] in O(1) time.`,
+    spaceComplexity: "O(N)",
+    spaceExplanation: `Hash set stores up to N elements per outer iteration.`,
+    algorithmExplanation: [
+      `Fixes first element nums[i].`,
+      `Iterates through remaining elements and looks up target complement in Hash Set.`,
+      `Avoids sorting but uses extra space for unique triplet lookup.`
+    ],
+    dryRun: `Input: [-1, 0, 1, 2, -1, -4]\ni=0 (-1), j=1 (0) -> Need complement 1 -> Found 1 in set -> Triplet [-1, 0, 1]`,
+    interviewTips: [`Discuss trade-off between Hash Set space O(N) vs Two Pointer space O(1).`],
+    examples: [
+      { language: "C++", code: betterCpp, explanation: "C++ 3Sum Hash Set." },
+      { language: "Java", code: betterJava, explanation: "Java 3Sum Hash Set." },
+      { language: "Python", code: betterPython, explanation: "Python 3Sum Hash Set." },
+      { language: "JavaScript", code: betterJs, explanation: "JS 3Sum Hash Set." }
+    ]
+  };
+
+  const bruteObj = {
+    title: `Brute Force Approach (Triple Nested Loop) for ${t}`,
+    timeComplexity: "O(N³)",
+    timeExplanation: `Three nested loops iterate over all possible triplet combinations (i, j, k).`,
+    spaceComplexity: "O(1)",
+    spaceExplanation: `Uses constant auxiliary space excluding set storing unique triplets.`,
+    algorithmExplanation: [
+      `Generates every possible combination of 3 indices (i, j, k).`,
+      `Checks if nums[i] + nums[j] + nums[k] == 0.`,
+      `Sorts each matching triplet and inserts into Set to eliminate duplicates.`
+    ],
+    dryRun: `i=0, j=1, k=2 -> sum != 0\ni=0, j=1, k=4 -> sum = -1 + 0 + 1 = 0 -> Found [-1, 0, 1]`,
+    interviewTips: [`Present O(N³) triple loop brute force first to show why two-pointer O(N²) is optimal.`],
+    examples: [
+      { language: "C++", code: bruteCpp, explanation: "C++ 3Sum Triple Loop." },
+      { language: "Java", code: bruteJava, explanation: "Java 3Sum Triple Loop." },
+      { language: "Python", code: brutePython, explanation: "Python 3Sum Triple Loop." },
+      { language: "JavaScript", code: bruteJs, explanation: "JS 3Sum Triple Loop." }
+    ]
+  };
+
   const codeExampleObj = {
     isProgramming: true,
     problemStatement: `Given an integer array nums, return all unique triplets [nums[i], nums[j], nums[k]] such that i != j, i != k, j != k, and nums[i] + nums[j] + nums[k] == 0.`,
-    description: `A production-grade multi-language implementation of 3Sum (Optimal Two-Pointer O(N²)).`,
+    description: `A production-grade multi-language implementation of 3Sum (Optimal Two-Pointer O(N²), Better Hash Set O(N²), Brute Force Triple Loop O(N³)).`,
     optimalApproach: optimalObj,
-    betterApproach: optimalObj,
-    bruteForce: optimalObj,
+    betterApproach: betterObj,
+    bruteForce: bruteObj,
     examples: optimalObj.examples
   };
 
@@ -1319,6 +1519,113 @@ function search(nums, target) {
 }
 `;
 
+  const betterCpp = `#include <bits/stdc++.h>
+using namespace std;
+
+// Recursive Binary Search: O(log N) Time, O(log N) Space
+class Solution {
+public:
+    int helper(vector<int>& nums, int low, int high, int target) {
+        if (low > high) return -1;
+        int mid = low + (high - low) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[mid] < target) return helper(nums, mid + 1, high, target);
+        return helper(nums, low, mid - 1, target);
+    }
+    int search(vector<int>& nums, int target) {
+        return helper(nums, 0, nums.size() - 1, target);
+    }
+};`;
+
+  const betterJava = `import java.util.*;
+
+// Recursive Binary Search: O(log N) Time, O(log N) Space
+class Solution {
+    private int helper(int[] nums, int low, int high, int target) {
+        if (low > high) return -1;
+        int mid = low + (high - low) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[mid] < target) return helper(nums, mid + 1, high, target);
+        return helper(nums, low, mid - 1, target);
+    }
+    public int search(int[] nums, int target) {
+        return helper(nums, 0, nums.length - 1, target);
+    }
+}`;
+
+  const betterPython = `# Recursive Binary Search: O(log N) Time, O(log N) Space
+class Solution:
+    def search(self, nums: list[int], target: int) -> int:
+        def helper(low, high):
+            if low > high:
+                return -1
+            mid = low + (high - low) // 2
+            if nums[mid] == target:
+                return mid
+            elif nums[mid] < target:
+                return helper(mid + 1, high)
+            else:
+                return helper(low, mid - 1)
+        return helper(0, len(nums) - 1)
+`;
+
+  const betterJs = `// Recursive Binary Search: O(log N) Time, O(log N) Space
+function search(nums, target) {
+  function helper(low, high) {
+    if (low > high) return -1;
+    const mid = low + Math.floor((high - low) / 2);
+    if (nums[mid] === target) return mid;
+    if (nums[mid] < target) return helper(mid + 1, high);
+    return helper(low, mid - 1);
+  }
+  return helper(0, nums.length - 1);
+}
+`;
+
+  const bruteCpp = `#include <bits/stdc++.h>
+using namespace std;
+
+// Linear Search Brute Force: O(N) Time, O(1) Space
+class Solution {
+public:
+    int search(vector<int>& nums, int target) {
+        for (int i = 0; i < nums.size(); i++) {
+            if (nums[i] == target) return i;
+        }
+        return -1;
+    }
+};`;
+
+  const bruteJava = `import java.util.*;
+
+// Linear Search Brute Force: O(N) Time, O(1) Space
+class Solution {
+    public int search(int[] nums, int target) {
+        for (int i = 0; i < nums.length; i++) {
+            if (nums[i] == target) return i;
+        }
+        return -1;
+    }
+}`;
+
+  const brutePython = `# Linear Search Brute Force: O(N) Time, O(1) Space
+class Solution:
+    def search(self, nums: list[int], target: int) -> int:
+        for i, val in enumerate(nums):
+            if val == target:
+                return i
+        return -1
+`;
+
+  const bruteJs = `// Linear Search Brute Force: O(N) Time, O(1) Space
+function search(nums, target) {
+  for (let i = 0; i < nums.length; i++) {
+    if (nums[i] === target) return i;
+  }
+  return -1;
+}
+`;
+
   const optimalObj = {
     title: `Optimal Approach (Iterative Binary Search) for ${t}`,
     timeComplexity: "O(log N)",
@@ -1340,13 +1647,54 @@ function search(nums, target) {
     ]
   };
 
+  const betterObj = {
+    title: `Better Approach (Recursive Binary Search) for ${t}`,
+    timeComplexity: "O(log N)",
+    timeExplanation: `Recursively halves search space in O(log N) steps.`,
+    spaceComplexity: "O(log N)",
+    spaceExplanation: `Uses call stack frame memory of depth log2(N).`,
+    algorithmExplanation: [
+      `Passes low and high bounds recursively.`,
+      `Base condition checks low > high -> target missing.`,
+      `Recurse left or right based on mid comparison.`
+    ],
+    dryRun: `Call helper(0, 5) -> mid 2 (5 < 7) -> Recurse helper(3, 5) -> mid 4 (9 > 7) -> Recurse helper(3, 3) -> Match 7`,
+    interviewTips: [`Discuss stack space O(log N) in recursive vs O(1) in iterative.`],
+    examples: [
+      { language: "C++", code: betterCpp, explanation: "C++ recursive binary search." },
+      { language: "Java", code: betterJava, explanation: "Java recursive binary search." },
+      { language: "Python", code: betterPython, explanation: "Python recursive binary search." },
+      { language: "JavaScript", code: betterJs, explanation: "JS recursive binary search." }
+    ]
+  };
+
+  const bruteObj = {
+    title: `Brute Force Approach (Linear Search) for ${t}`,
+    timeComplexity: "O(N)",
+    timeExplanation: `Iterates over array elements one by one from index 0 to N-1.`,
+    spaceComplexity: "O(1)",
+    spaceExplanation: `Uses constant loop counter i.`,
+    algorithmExplanation: [
+      `Scans entire array linearly.`,
+      `Compares each element against target until found or end of array reached.`
+    ],
+    dryRun: `Input: [1, 3, 5, 7, 9], target = 7\nIter 0: 1 != 7\nIter 1: 3 != 7\nIter 2: 5 != 7\nIter 3: 7 == 7 -> Return 3`,
+    interviewTips: [`Present linear scan brute force first to highlight why binary search log(N) is far superior for sorted input.`],
+    examples: [
+      { language: "C++", code: bruteCpp, explanation: "C++ linear search." },
+      { language: "Java", code: bruteJava, explanation: "Java linear search." },
+      { language: "Python", code: brutePython, explanation: "Python linear search." },
+      { language: "JavaScript", code: bruteJs, explanation: "JS linear search." }
+    ]
+  };
+
   const codeExampleObj = {
     isProgramming: true,
     problemStatement: `Given a sorted array of distinct integers 'nums' and a target value, return the target index or -1.`,
-    description: `A production-grade implementation of Binary Search (Optimal Iterative O(log N)).`,
+    description: `A production-grade implementation of Binary Search (Optimal Iterative O(log N), Better Recursive O(log N), Brute Force Linear Search O(N)).`,
     optimalApproach: optimalObj,
-    betterApproach: optimalObj,
-    bruteForce: optimalObj,
+    betterApproach: betterObj,
+    bruteForce: bruteObj,
     examples: optimalObj.examples
   };
 
@@ -1360,10 +1708,10 @@ function generateGenericTopicCode(t: string) {
     cleanName = `Solution${cleanName}`;
   }
 
-  const cppCode = `#include <bits/stdc++.h>
+  const optCpp = `#include <bits/stdc++.h>
 using namespace std;
 
-// Optimal Production Implementation for ${t}
+// Optimal Approach for ${t}: Linear Tracking - O(N) Time, O(N) Space
 class ${cleanName} {
 public:
     vector<int> solve(vector<int>& data) {
@@ -1391,9 +1739,9 @@ int main() {
     return 0;
 }`;
 
-  const javaCode = `import java.util.*;
+  const optJava = `import java.util.*;
 
-// Optimal Production Implementation for ${t}
+// Optimal Approach for ${t}: Linear Tracking - O(N) Time, O(N) Space
 public class ${cleanName} {
     public static List<Integer> solve(int[] data) {
         List<Integer> result = new ArrayList<>();
@@ -1416,7 +1764,7 @@ public class ${cleanName} {
     }
 }`;
 
-  const pythonCode = `# Optimal Production Implementation for ${t}
+  const optPython = `# Optimal Approach for ${t}: Linear Tracking - O(N) Time, O(N) Space
 class ${cleanName}:
     def solve(self, data: list[int]) -> list[int]:
         if not data:
@@ -1436,7 +1784,7 @@ if __name__ == "__main__":
     print("${t} output items:", len(ans))
 `;
 
-  const jsCode = `// Optimal Production Implementation for ${t}
+  const optJs = `// Optimal Approach for ${t}: Linear Tracking - O(N) Time, O(N) Space
 function solve(data) {
   if (!data || data.length === 0) return [];
   
@@ -1455,6 +1803,130 @@ function solve(data) {
 console.log("${t} output items count:", solve([1, 4, 2, 8, 5, 7]).length);
 `;
 
+  const betterCpp = `#include <bits/stdc++.h>
+using namespace std;
+
+// Better Approach for ${t}: Index Buffer Pointer - O(N) Time, O(N) Space
+class ${cleanName} {
+public:
+    vector<int> solve(vector<int>& data) {
+        int n = data.size();
+        vector<int> buffer(n);
+        int ptr = 0;
+        for (int i = 0; i < n; i++) {
+            if (data[i] >= 0) {
+                buffer[ptr++] = data[i];
+            }
+        }
+        buffer.resize(ptr);
+        return buffer;
+    }
+};`;
+
+  const betterJava = `import java.util.*;
+
+// Better Approach for ${t}: Index Buffer Pointer - O(N) Time, O(N) Space
+public class ${cleanName} {
+    public static int[] solve(int[] data) {
+        int[] buffer = new int[data.length];
+        int ptr = 0;
+        for (int val : data) {
+            if (val >= 0) {
+                buffer[ptr++] = val;
+            }
+        }
+        return Arrays.copyOf(buffer, ptr);
+    }
+}`;
+
+  const betterPython = `# Better Approach for ${t}: Index Buffer Pointer - O(N) Time, O(N) Space
+class ${cleanName}:
+    def solve(self, data: list[int]) -> list[int]:
+        buffer = [0] * len(data)
+        ptr = 0
+        for val in data:
+            if val >= 0:
+                buffer[ptr] = val
+                ptr += 1
+        return buffer[:ptr]
+`;
+
+  const betterJs = `// Better Approach for ${t}: Index Buffer Pointer - O(N) Time, O(N) Space
+function solve(data) {
+  const buffer = new Array(data.length);
+  let ptr = 0;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i] >= 0) {
+      buffer[ptr++] = data[i];
+    }
+  }
+  return buffer.slice(0, ptr);
+}
+`;
+
+  const bruteCpp = `#include <bits/stdc++.h>
+using namespace std;
+
+// Brute Force Approach for ${t}: Pairwise Validation - O(N^2) Time, O(1) Space
+class ${cleanName} {
+public:
+    int solve(vector<int>& data) {
+        int maxVal = 0;
+        int n = data.size();
+        for (int i = 0; i < n; i++) {
+            for (int j = i; j < n; j++) {
+                if (data[i] + data[j] > maxVal) {
+                    maxVal = data[i] + data[j];
+                }
+            }
+        }
+        return maxVal;
+    }
+};`;
+
+  const bruteJava = `import java.util.*;
+
+// Brute Force Approach for ${t}: Pairwise Validation - O(N^2) Time, O(1) Space
+public class ${cleanName} {
+    public static int solve(int[] data) {
+        int maxVal = 0;
+        for (int i = 0; i < data.length; i++) {
+            for (int j = i; j < data.length; j++) {
+                if (data[i] + data[j] > maxVal) {
+                    maxVal = data[i] + data[j];
+                }
+            }
+        }
+        return maxVal;
+    }
+}`;
+
+  const brutePython = `# Brute Force Approach for ${t}: Pairwise Validation - O(N^2) Time, O(1) Space
+class ${cleanName}:
+    def solve(self, data: list[int]) -> int:
+        max_val = 0
+        n = len(data)
+        for i in range(n):
+            for j in range(i, n):
+                if data[i] + data[j] > max_val:
+                    max_val = data[i] + data[j]
+        return max_val
+`;
+
+  const bruteJs = `// Brute Force Approach for ${t}: Pairwise Validation - O(N^2) Time, O(1) Space
+function solve(data) {
+  let maxVal = 0;
+  for (let i = 0; i < data.length; i++) {
+    for (let j = i; j < data.length; j++) {
+      if (data[i] + data[j] > maxVal) {
+        maxVal = data[i] + data[j];
+      }
+    }
+  }
+  return maxVal;
+}
+`;
+
   const optimalObj = {
     title: `Optimal Approach for ${t}`,
     timeComplexity: "O(N)",
@@ -1471,10 +1943,51 @@ console.log("${t} output items count:", solve([1, 4, 2, 8, 5, 7]).length);
       `Explain fundamental principles and space-time trade-offs of ${t} before presenting code.`
     ],
     examples: [
-      { language: "C++", code: cppCode, explanation: `C++ implementation for ${t}.` },
-      { language: "Java", code: javaCode, explanation: `Java implementation for ${t}.` },
-      { language: "Python", code: pythonCode, explanation: `Python implementation for ${t}.` },
-      { language: "JavaScript", code: jsCode, explanation: `JavaScript implementation for ${t}.` }
+      { language: "C++", code: optCpp, explanation: `C++ implementation for ${t}.` },
+      { language: "Java", code: optJava, explanation: `Java implementation for ${t}.` },
+      { language: "Python", code: optPython, explanation: `Python implementation for ${t}.` },
+      { language: "JavaScript", code: optJs, explanation: `JavaScript implementation for ${t}.` }
+    ]
+  };
+
+  const betterObj = {
+    title: `Better Approach (Index Buffer Pointer) for ${t}`,
+    timeComplexity: "O(N)",
+    timeExplanation: `Single-pass index buffer traversal avoiding dynamic allocation re-sizes.`,
+    spaceComplexity: "O(N)",
+    spaceExplanation: `Allocates pre-sized primitive array buffer.`,
+    algorithmExplanation: [
+      `Pre-allocates buffer array to prevent dynamic vector resizes.`,
+      `Tracks valid elements using integer write pointer.`,
+      `Returns clean sliced result buffer.`
+    ],
+    dryRun: `Input: [1, 4, 2, 8]\nptr 0: val 1 -> buffer[0]=1\nptr 1: val 4 -> buffer[1]=4\nResult: [1, 4, 2, 8]`,
+    interviewTips: [`Discuss memory allocation overhead of dynamic lists vs pre-allocated buffers.`],
+    examples: [
+      { language: "C++", code: betterCpp, explanation: `C++ buffer pointer for ${t}.` },
+      { language: "Java", code: betterJava, explanation: `Java array copy buffer for ${t}.` },
+      { language: "Python", code: betterPython, explanation: `Python list slice buffer for ${t}.` },
+      { language: "JavaScript", code: betterJs, explanation: `JS TypedArray slice for ${t}.` }
+    ]
+  };
+
+  const bruteObj = {
+    title: `Brute Force Approach (Pairwise Validation) for ${t}`,
+    timeComplexity: "O(N²)",
+    timeExplanation: `Double loop checks all O(N²) index pairs (i, j).`,
+    spaceComplexity: "O(1)",
+    spaceExplanation: `Uses constant memory pointers without auxiliary collections.`,
+    algorithmExplanation: [
+      `Evaluates every possible index pair combination (i, j).`,
+      `Calculates total pairwise sum and updates running maximum value.`
+    ],
+    dryRun: `i=0, j=0: sum=2\ni=0, j=1: sum=5\ni=1, j=3: sum=12 -> Max = 12`,
+    interviewTips: [`Start with O(N²) pairwise brute force before presenting O(N) optimal implementation.`],
+    examples: [
+      { language: "C++", code: bruteCpp, explanation: `C++ pairwise loop for ${t}.` },
+      { language: "Java", code: bruteJava, explanation: `Java pairwise loop for ${t}.` },
+      { language: "Python", code: brutePython, explanation: `Python pairwise loop for ${t}.` },
+      { language: "JavaScript", code: bruteJs, explanation: `JS pairwise loop for ${t}.` }
     ]
   };
 
@@ -1483,8 +1996,8 @@ console.log("${t} output items count:", solve([1, 4, 2, 8, 5, 7]).length);
     problemStatement: `Design and implement an efficient solution for ${t}.`,
     description: `A comprehensive multi-language implementation for ${t}.`,
     optimalApproach: optimalObj,
-    betterApproach: optimalObj,
-    bruteForce: optimalObj,
+    betterApproach: betterObj,
+    bruteForce: bruteObj,
     examples: optimalObj.examples
   };
 
