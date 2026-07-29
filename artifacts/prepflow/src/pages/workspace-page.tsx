@@ -220,20 +220,15 @@ export function WorkspacePage() {
       }
 
       case "code": {
-        const hasCodeContent = Boolean(
-          workspace.codeExample?.optimalApproach ||
-          workspace.codeExample?.betterApproach ||
-          workspace.codeExample?.bruteForce ||
-          (Array.isArray(workspace.codeExample?.examples) && workspace.codeExample.examples.length > 0)
-        );
-        if ((codeLoader.status === "loading" || codeLoader.status === "idle") && !hasCodeContent) {
-          return <ModuleSkeleton title="Generating code examples..." type="default" />;
+        const hasCode = Boolean(workspace.codeExample);
+        if ((codeLoader.status === "loading" || codeLoader.status === "idle") && !hasCode) {
+          return <ModuleSkeleton title="Generating code examples..." type="code" />;
         }
-        if (codeLoader.status === "error" && !hasCodeContent) {
-          return <ModuleError moduleName="Code Examples" error={codeLoader.error} onRetry={codeLoader.retry} />;
+        if (codeLoader.status === "error" && !hasCode) {
+          return <ModuleError moduleName="Coding Examples" error={codeLoader.error} onRetry={codeLoader.retry} />;
         }
         return (
-          <ErrorBoundary moduleName="Code Examples">
+          <ErrorBoundary moduleName="Coding Examples">
             <CodeExamplesModule workspace={workspace} />
           </ErrorBoundary>
         );
@@ -241,7 +236,7 @@ export function WorkspacePage() {
 
       case "notes":
         return (
-          <ErrorBoundary moduleName="Notes">
+          <ErrorBoundary moduleName="Personal Notes">
             <PersonalNotesModule workspace={workspace} />
           </ErrorBoundary>
         );
@@ -270,30 +265,46 @@ export function WorkspacePage() {
     <Layout showWorkspaceActions workspace={workspace}>
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative print:block">
         {/* Mobile Nav Header */}
-        <div className="md:hidden border-b border-border/50 bg-card p-4 flex justify-between items-center z-20 print:hidden">
-          <span className="font-semibold flex items-center gap-2 text-sm">
+        <div className="md:hidden border-b border-border/50 bg-card/90 backdrop-blur-md p-3.5 flex justify-between items-center z-20 print:hidden sticky top-0">
+          <span className="font-semibold flex items-center gap-2 text-sm text-foreground">
             {navItems.find((n) => n.id === activeModule)?.icon}
             {navItems.find((n) => n.id === activeModule)?.label}
           </span>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 bg-secondary rounded-lg"
+            className="p-2.5 bg-secondary hover:bg-secondary/80 rounded-xl min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
+        {/* Mobile Backdrop Overlay */}
+        {mobileMenuOpen && (
+          <div
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+            aria-hidden="true"
+          />
+        )}
+
         {/* Sidebar Nav */}
         <nav
           className={cn(
-            "absolute inset-0 z-10 bg-background md:bg-card/40 md:relative w-full md:w-64 lg:w-72 border-r border-border/50 flex flex-col transition-transform duration-300 md:translate-x-0 print:hidden justify-between",
+            "fixed inset-y-0 left-0 z-50 bg-background/95 backdrop-blur-xl md:bg-card/40 md:relative w-[280px] sm:w-72 md:w-64 lg:w-72 border-r border-border/50 flex flex-col transition-transform duration-300 ease-out md:translate-x-0 print:hidden justify-between shadow-2xl md:shadow-none",
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
           )}
         >
           <div className="p-4 overflow-y-auto flex-1 no-scrollbar space-y-1">
-            <div className="px-3 pb-3 pt-1 border-b border-border/40 mb-3 flex items-center">
+            <div className="px-3 pb-3 pt-1 border-b border-border/40 mb-3 flex items-center justify-between">
               <AppLogo size={36} showText />
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="md:hidden p-1.5 rounded-lg text-muted-foreground hover:text-foreground"
+                aria-label="Close drawer"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <div className="px-3 pb-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase font-mono">
               Learning Modules
@@ -306,7 +317,7 @@ export function WorkspacePage() {
                   setMobileMenuOpen(false);
                 }}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-left",
+                  "w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all text-left min-h-[44px]",
                   activeModule === item.id
                     ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 font-semibold"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -327,10 +338,13 @@ export function WorkspacePage() {
 
           <div className="p-4 border-t border-border/40 space-y-2">
             <button
-              onClick={() => setLocation("/profile")}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors"
+              onClick={() => {
+                setLocation("/profile");
+                setMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-3 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors min-h-[44px]"
             >
-              <User className="w-4 h-4 text-primary" /> Profile &amp; Stats
+              <User className="w-4 h-4 text-primary shrink-0" /> Profile &amp; Stats
             </button>
           </div>
         </nav>
@@ -338,7 +352,7 @@ export function WorkspacePage() {
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto bg-background/50 relative">
           <div className="absolute inset-0 bg-grid-primary/[0.02] bg-[size:32px_32px] pointer-events-none" />
-          <div className="container max-w-5xl mx-auto p-4 md:p-8 lg:p-10 min-h-full print:p-0 print:m-0">
+          <div className="container max-w-5xl mx-auto p-3 sm:p-6 md:p-8 lg:p-10 min-h-full print:p-0 print:m-0">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeModule}
@@ -346,7 +360,7 @@ export function WorkspacePage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="h-full print:h-auto"
+                className="h-full print:h-auto max-w-full overflow-x-hidden"
               >
                 {renderModuleContent()}
               </motion.div>
@@ -357,3 +371,5 @@ export function WorkspacePage() {
     </Layout>
   );
 }
+
+export default WorkspacePage;

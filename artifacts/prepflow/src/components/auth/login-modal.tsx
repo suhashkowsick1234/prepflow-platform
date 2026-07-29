@@ -87,15 +87,15 @@ export function LoginModal() {
         }
       }}
     >
-      <DialogContent className="sm:max-w-md p-6 overflow-hidden">
+      <DialogContent className="sm:max-w-md p-5 sm:p-6 overflow-hidden rounded-2xl max-w-[92vw]">
         <DialogHeader className="text-center sm:text-center flex flex-col items-center space-y-2">
           <div className="mb-1">
-            <AppLogo size={52} showText={false} />
+            <AppLogo size={48} showText={false} />
           </div>
-          <DialogTitle className="text-2xl font-bold font-display">
+          <DialogTitle className="text-xl sm:text-2xl font-bold font-display">
             {mode === "google" ? "Sign In with Google" : mode === "phone" ? "Sign In with Phone" : "Welcome to PrepFlow AI"}
           </DialogTitle>
-          <DialogDescription className="text-sm">
+          <DialogDescription className="text-xs sm:text-sm">
             {mode === "google"
               ? "Enter your name and email to continue."
               : mode === "phone"
@@ -117,9 +117,9 @@ export function LoginModal() {
             <Button
               variant="outline"
               onClick={() => setMode("google")}
-              className="w-full h-12 rounded-xl text-sm font-semibold gap-3 border-border/80 hover:bg-secondary justify-center shadow-sm"
+              className="w-full min-h-[44px] h-12 rounded-xl text-sm font-semibold gap-3 border-border/80 hover:bg-secondary justify-center shadow-sm"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -143,9 +143,9 @@ export function LoginModal() {
             <Button
               variant="outline"
               onClick={() => setMode("phone")}
-              className="w-full h-12 rounded-xl text-sm font-semibold gap-3 border-border/80 hover:bg-secondary justify-center shadow-sm"
+              className="w-full min-h-[44px] h-12 rounded-xl text-sm font-semibold gap-3 border-border/80 hover:bg-secondary justify-center shadow-sm"
             >
-              <Phone className="w-5 h-5 text-emerald-500" />
+              <Phone className="w-5 h-5 text-emerald-500 shrink-0" />
               Continue with Phone Number
             </Button>
           </div>
@@ -158,13 +158,13 @@ export function LoginModal() {
                 Full Name
               </Label>
               <div className="relative">
-                <User className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+                <User className="w-4 h-4 absolute left-3 top-3.5 text-muted-foreground" />
                 <Input
                   id="google-name"
                   placeholder="John Doe"
                   value={googleName}
                   onChange={(e) => setGoogleName(e.target.value)}
-                  className="pl-9 rounded-xl h-10 text-sm"
+                  className="pl-9 rounded-xl min-h-[44px] h-11 text-base sm:text-sm"
                   autoFocus
                 />
               </div>
@@ -175,14 +175,14 @@ export function LoginModal() {
                 Email Address
               </Label>
               <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+                <Mail className="w-4 h-4 absolute left-3 top-3.5 text-muted-foreground" />
                 <Input
                   id="google-email"
                   type="email"
                   placeholder="john@example.com"
                   value={googleEmail}
                   onChange={(e) => setGoogleEmail(e.target.value)}
-                  className="pl-9 rounded-xl h-10 text-sm"
+                  className="pl-9 rounded-xl min-h-[44px] h-11 text-base sm:text-sm"
                 />
               </div>
             </div>
@@ -195,14 +195,14 @@ export function LoginModal() {
                   setMode("choose");
                   setError("");
                 }}
-                className="rounded-xl h-10"
+                className="rounded-xl min-h-[44px] h-11"
               >
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="flex-1 rounded-xl h-10 font-semibold gap-2"
+                className="flex-1 rounded-xl min-h-[44px] h-11 font-semibold gap-2"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign In"}
               </Button>
@@ -226,7 +226,7 @@ export function LoginModal() {
                   placeholder="(555) 000-0000"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="rounded-l-none rounded-r-xl h-10 text-sm"
+                  className="rounded-l-none rounded-r-xl min-h-[44px] h-11 text-base sm:text-sm"
                   autoFocus
                 />
               </div>
@@ -240,11 +240,11 @@ export function LoginModal() {
                   setMode("choose");
                   setError("");
                 }}
-                className="rounded-xl h-10"
+                className="rounded-xl min-h-[44px] h-11"
               >
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back
               </Button>
-              <Button type="submit" className="flex-1 rounded-xl h-10 font-semibold gap-2">
+              <Button type="submit" className="flex-1 rounded-xl min-h-[44px] h-11 font-semibold gap-2">
                 Send OTP <Sparkles className="w-4 h-4" />
               </Button>
             </div>
@@ -264,7 +264,7 @@ export function LoginModal() {
                 placeholder="1234"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="text-center tracking-[0.5em] text-lg font-mono rounded-xl h-12"
+                className="text-center tracking-[0.5em] text-lg font-mono rounded-xl min-h-[48px] h-12 text-base sm:text-lg"
                 autoFocus
               />
             </div>
@@ -277,14 +277,14 @@ export function LoginModal() {
                   setStep("phone");
                   setError("");
                 }}
-                className="rounded-xl h-10"
+                className="rounded-xl min-h-[44px] h-11"
               >
                 <ArrowLeft className="w-4 h-4 mr-1" /> Change Number
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="flex-1 rounded-xl h-10 font-semibold gap-2"
+                className="flex-1 rounded-xl min-h-[44px] h-11 font-semibold gap-2"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify & Sign In"}
               </Button>
