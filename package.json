@@ -4,6 +4,7 @@
   "license": "MIT",
   "type": "module",
   "private": true,
+  "packageManager": "pnpm@11.17.0",
   "scripts": {
     "dev:local": "node run-local.js",
     "build": "pnpm run typecheck && pnpm --filter ./artifacts/prepflow run build",
