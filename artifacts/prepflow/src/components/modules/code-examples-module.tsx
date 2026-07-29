@@ -159,12 +159,38 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
   };
 
   // Get current approach object (Optimal, Better, or Brute Force)
-  const currentApproachData = codeData[selectedApproach] || fallbackCodeObj[selectedApproach] || fallbackCodeObj.optimalApproach;
+  let currentApproachData = codeData[selectedApproach];
+
+  // If selected approach is missing or identical to optimal (when selecting better or brute force), use fallback distinct approach
+  if (
+    !currentApproachData ||
+    !Array.isArray(currentApproachData?.examples) ||
+    currentApproachData.examples.length === 0 ||
+    (selectedApproach !== "optimalApproach" &&
+      JSON.stringify(currentApproachData?.examples) === JSON.stringify(codeData.optimalApproach?.examples))
+  ) {
+    currentApproachData = fallbackCodeObj[selectedApproach] || fallbackCodeObj.optimalApproach;
+  }
 
   const approachOptions = [
-    { id: "optimalApproach" as const, label: "Optimal Approach", badge: "O(N)", color: "border-emerald-500/40 text-emerald-500" },
-    { id: "betterApproach" as const, label: "Better Approach", badge: "O(N log N)", color: "border-amber-500/40 text-amber-500" },
-    { id: "bruteForce" as const, label: "Brute Force", badge: "O(N²)", color: "border-rose-500/40 text-rose-500" },
+    {
+      id: "optimalApproach" as const,
+      label: "Optimal Approach",
+      badge: String(fallbackCodeObj.optimalApproach?.timeComplexity || "O(N)"),
+      color: "border-emerald-500/40 text-emerald-500",
+    },
+    {
+      id: "betterApproach" as const,
+      label: "Better Approach",
+      badge: String(fallbackCodeObj.betterApproach?.timeComplexity || "O(N log N)"),
+      color: "border-amber-500/40 text-amber-500",
+    },
+    {
+      id: "bruteForce" as const,
+      label: "Brute Force",
+      badge: String(fallbackCodeObj.bruteForce?.timeComplexity || "O(N²)"),
+      color: "border-rose-500/40 text-rose-500",
+    },
   ];
 
   // Extract language specific code for selected language
