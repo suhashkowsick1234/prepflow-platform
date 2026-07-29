@@ -1,7 +1,7 @@
 import { ModuleName, getCachedModule, setCachedModule } from "./module-cache";
 import { safeFetchJson } from "./safe-fetch";
 import { getApiUrl } from "./api-config";
-import { getFallbackForModule } from "./fallback-generators";
+import { getFallbackForModule, validateTopicRelevance } from "./fallback-generators";
 
 /**
  * ARCHITECTURAL DESIGN DECISION: Custom Single-Concurrency Request Queue
@@ -174,8 +174,16 @@ class RequestQueue {
           );
 
           // If backend API returns 404 or is un-deployed, use client-side fallback generator
-          const fallbackData = getFallbackForModule(task.module, task.topic);
-          return fallbackData;
+          return getFallbackForModule(task.module, task.topic);
+        }
+
+        // Validate topic relevance to eliminate cross-topic leakage
+        if (!validateTopicRelevance(result.data, task.topic)) {
+          console.warn(
+            `[requestQueue] Response from "${fullUrl}" failed topic relevance validation for "${task.topic}".\n` +
+            `Generating topic-specific dynamic content fallback.`
+          );
+          return getFallbackForModule(task.module, task.topic);
         }
 
         return result.data;
