@@ -314,75 +314,370 @@ export function getFallbackQuiz(topic: string): any[] {
 
 export function getFallbackInterviewQuestions(topic: string): any[] {
   const t = topic.trim();
-  const questions: any[] = [];
 
-  // 10 Basic Questions
-  for (let i = 1; i <= 10; i++) {
-    questions.push({
-      question: `[Basic Q${i}] What are the foundational concepts of ${t} and why are they important?`,
-      answer: `The foundational concepts of ${t} include modular state management, algorithmic efficiency, and clean data boundaries. Understanding them is essential for writing scalable, bug-free applications.`,
-      explanation: `Basic level evaluation verifies whether the candidate grasps core definitions and fundamental usage rules before diving into complex design.`,
+  return [
+    // --- 1. BASIC QUESTIONS (10 Distinct Q&A) ---
+    {
+      question: `What is the core definition and primary objective of ${t} in software engineering?`,
+      answer: `${t} provides structured principles and computational abstractions designed to organize data flow, optimize execution speed, and establish clean modular boundaries for application development.`,
+      explanation: `Evaluates fundamental understanding of ${t} definition and core purpose.`,
       difficulty: "Easy",
       category: "Basic"
-    });
-  }
+    },
+    {
+      question: `Which fundamental data structures are typically used when implementing ${t}?`,
+      answer: `Implementations of ${t} leverage fundamental structures such as primitive arrays, dynamic vectors, hash maps, or LIFO stacks/queues to maintain state invariants and optimize access bounds.`,
+      explanation: `Checks knowledge of underlying data structures required for ${t}.`,
+      difficulty: "Easy",
+      category: "Basic"
+    },
+    {
+      question: `What are the typical time and space complexity characteristics of ${t}?`,
+      answer: `Optimal implementations run in O(N) or O(log N) time with O(1) or O(N) auxiliary space. Naive brute-force implementations may degrade to O(N²) or O(N³) due to nested iteration overhead.`,
+      explanation: `Measures ability to evaluate basic big-O complexity bounds for ${t}.`,
+      difficulty: "Easy",
+      category: "Basic"
+    },
+    {
+      question: `How do you handle invalid parameters or empty boundary inputs when building a function for ${t}?`,
+      answer: `Defensive guardrails include early parameter validation, checking for null/undefined bounds, verifying non-empty array lengths, throwing explicit exception types, and returning graceful fallback defaults.`,
+      explanation: `Assesses defensive programming and input validation practices for ${t}.`,
+      difficulty: "Easy",
+      category: "Basic"
+    },
+    {
+      question: `What are the key trade-offs between an iterative approach and a recursive approach for ${t}?`,
+      answer: `Iterative approaches run in O(1) auxiliary space without risk of call-stack overflow. Recursive approaches offer cleaner syntax for tree/graph decomposition but incur O(D) stack space overhead.`,
+      explanation: `Evaluates understanding of control flow trade-offs in ${t}.`,
+      difficulty: "Easy",
+      category: "Basic"
+    },
+    {
+      question: `How does ${t} manage memory allocations during high-frequency execution loops?`,
+      answer: `${t} minimizes heap allocations by reusing primitive buffer arrays, leveraging object pooling, avoiding dynamic object instantiations inside hot loops, and allowing garbage collectors to reclaim transient references.`,
+      explanation: `Focuses on memory management and garbage collection impact in ${t}.`,
+      difficulty: "Easy",
+      category: "Basic"
+    },
+    {
+      question: `What is a common developer mistake or anti-pattern when first implementing ${t}?`,
+      answer: `A common mistake is ignoring boundary conditions (such as zero length, duplicate elements, or negative numbers), leading to index-out-of-bounds errors or incorrect return values.`,
+      explanation: `Highlights common implementation pitfalls in ${t}.`,
+      difficulty: "Easy",
+      category: "Basic"
+    },
+    {
+      question: `When should you prioritize code readability over micro-optimizations for ${t}?`,
+      answer: `Readability and maintainability should always be prioritized first. Micro-optimizations (like bitwise tricks or low-level pointers) should only be introduced after profiling proves ${t} is a bottleneck.`,
+      explanation: `Evaluates pragmatic engineering judgment on clean code vs performance.`,
+      difficulty: "Easy",
+      category: "Basic"
+    },
+    {
+      question: `What test cases should be included in a unit test suite for ${t}?`,
+      answer: `Test suites must cover: 1) Standard happy paths, 2) Boundary cases (empty array, single element), 3) Extreme values (large numbers, negatives), 4) Duplicates, and 5) Invalid type parameters.`,
+      explanation: `Verifies testing methodology and edge-case coverage for ${t}.`,
+      difficulty: "Easy",
+      category: "Basic"
+    },
+    {
+      question: `Which standard library functions or language built-ins complement ${t} in production code?`,
+      answer: `Standard library complements include built-in sort functions (std::sort, Arrays.sort), hash set/map collections (unordered_map, HashMap, dict), binary search helpers, and array copy utilities.`,
+      explanation: `Tests familiarity with standard language utilities related to ${t}.`,
+      difficulty: "Easy",
+      category: "Basic"
+    },
 
-  // 10 Intermediate Questions
-  for (let i = 1; i <= 10; i++) {
-    questions.push({
-      question: `[Intermediate Q${i}] How do you evaluate time and space trade-offs when implementing ${t}?`,
-      answer: `Evaluating trade-offs requires profiling execution latency (time complexity O(N)) against memory allocation (space complexity O(1) vs O(N)). Decisions depend on whether CPU latency or RAM constraints are the bottleneck.`,
-      explanation: `Intermediate evaluation checks the candidate's ability to analyze algorithmic efficiency and make informed engineering decisions.`,
+    // --- 2. INTERMEDIATE QUESTIONS (10 Distinct Q&A) ---
+    {
+      question: `How can auxiliary memory space be traded to reduce execution latency when optimizing ${t}?`,
+      answer: `By storing pre-calculated results in auxiliary lookup structures (such as Hash Maps, Memoization tables, or Prefix Arrays), runtime search drops from O(N) or O(N²) down to O(1) at the cost of O(N) memory.`,
+      explanation: `Analyzes space-time trade-off mechanics in ${t}.`,
       difficulty: "Medium",
       category: "Intermediate"
-    });
-  }
+    },
+    {
+      question: `What loop invariant must be maintained to ensure correctness when executing ${t}?`,
+      answer: `The primary invariant requires that after each iteration, intermediate accumulators (pointers, stacks, or running sums) correctly represent all processed elements without corrupting remaining bounds.`,
+      explanation: `Tests formal algorithmic loop invariant verification for ${t}.`,
+      difficulty: "Medium",
+      category: "Intermediate"
+    },
+    {
+      question: `How do you ensure thread safety when executing ${t} in a concurrent multi-threaded environment?`,
+      answer: `Thread safety is achieved using thread-local storage, explicit synchronization locks (ReentrantLock/mutex), atomic primitives (AtomicInteger), or making state structures immutable.`,
+      explanation: `Focuses on concurrency and multi-threading safety in ${t}.`,
+      difficulty: "Medium",
+      category: "Intermediate"
+    },
+    {
+      question: `How does sub-problem decomposition prevent redundant computations in ${t}?`,
+      answer: `Sub-problem decomposition (via Divide & Conquer or Dynamic Programming) solves overlapping sub-problems once and stores their solutions in memoization tables, eliminating exponential redundant calls.`,
+      explanation: `Evaluates sub-problem isolation and memoization principles in ${t}.`,
+      difficulty: "Medium",
+      category: "Intermediate"
+    },
+    {
+      question: `How do you prevent integer overflow or numeric precision loss when executing ${t}?`,
+      answer: `Numeric overflow is prevented by using wider data types (long long in C++, long in Java, BigInt in JS), or calculating midpoints safely using mid = low + (high - low) / 2.`,
+      explanation: `Addresses numerical boundary handling and overflow safety in ${t}.`,
+      difficulty: "Medium",
+      category: "Intermediate"
+    },
+    {
+      question: `How should the public interface for ${t} be encapsulated to decouple it from client modules?`,
+      answer: `The public API should expose minimal interface methods taking standard collections or generic interfaces, hiding internal pointers, auxiliary buffers, and private helper logic.`,
+      explanation: `Assesses modular software design and API encapsulation for ${t}.`,
+      difficulty: "Medium",
+      category: "Intermediate"
+    },
+    {
+      question: `How can ${t} be modified to handle continuous real-time data streams instead of static arrays?`,
+      answer: `Streaming adaptation uses online sliding window queues, min/max heaps, or running summary accumulators that update in O(1) or O(log K) time per incoming event without re-scanning past history.`,
+      explanation: `Tests real-time stream processing adaptation for ${t}.`,
+      difficulty: "Medium",
+      category: "Intermediate"
+    },
+    {
+      question: `In what scenarios does pre-sorting input data significantly improve the efficiency of ${t}?`,
+      answer: `Pre-sorting enables O(log N) binary search, directional two-pointer scans, and instant duplicate skipping, reducing overall complexity from O(N³) or O(N²) down to O(N log N).`,
+      explanation: `Examines pre-processing benefits of sorting for ${t}.`,
+      difficulty: "Medium",
+      category: "Intermediate"
+    },
+    {
+      question: `When implementing custom object comparisons in ${t}, what rules must a comparator satisfy?`,
+      answer: `Custom comparators must satisfy strict weak ordering: 1) comp(a, a) is false, 2) If comp(a, b) is true then comp(b, a) is false, and 3) Transitivity: comp(a, b) and comp(b, c) imply comp(a, c).`,
+      explanation: `Verifies strict weak ordering rules for custom sorting in ${t}.`,
+      difficulty: "Medium",
+      category: "Intermediate"
+    },
+    {
+      question: `What tools and methodology would you use to profile performance bottlenecks in ${t}?`,
+      answer: `Use CPU profilers (JProfiler, pprof, Chrome DevTools), memory allocation samplers, micro-benchmarking frameworks (JMH, Google Benchmark), and APM tools to measure hotspot execution times.`,
+      explanation: `Covers profiling and benchmarking techniques for ${t}.`,
+      difficulty: "Medium",
+      category: "Intermediate"
+    },
 
-  // 10 Advanced Questions
-  for (let i = 1; i <= 10; i++) {
-    questions.push({
-      question: `[Advanced Q${i}] How would you architect ${t} to scale across distributed, highly concurrent production workloads?`,
-      answer: `Architecting for high scale involves stateless processing nodes, horizontal partitioning, distributed caching (e.g. Redis), asynchronous message queues, and robust circuit breaker fallbacks.`,
-      explanation: `Advanced level questions test staff-level architectural intuition, concurrency management, and system resilience under load.`,
+    // --- 3. ADVANCED QUESTIONS (10 Distinct Q&A) ---
+    {
+      question: `How would you architect a distributed partitioning strategy to scale ${t} across a server cluster?`,
+      answer: `Partition data horizontally using consistent hashing or range sharding across nodes. Deploy stateless worker pools behind a load balancer with distributed caching (Redis) for hot queries.`,
+      explanation: `Evaluates distributed system sharding and cluster architecture for ${t}.`,
       difficulty: "Hard",
       category: "Advanced"
-    });
-  }
+    },
+    {
+      question: `How do message queues and rate limiters protect ${t} during extreme traffic spikes?`,
+      answer: `Incoming tasks are ingested into persistent message queues (Kafka/RabbitMQ) to decouple requests from background workers. Token bucket rate limiters prevent worker pool thread exhaustion.`,
+      explanation: `Focuses on queueing, buffering, and backpressure mechanisms for ${t}.`,
+      difficulty: "Hard",
+      category: "Advanced"
+    },
+    {
+      question: `Which cache eviction strategy (LRU, LFU, ARC) is optimal for caching outputs of ${t}?`,
+      answer: `LRU (Least Recently Used) suits temporal locality where recent queries repeat. LFU (Least Frequently Used) is best for skewed item popularity. ARC dynamically balances both based on workload trends.`,
+      explanation: `Analyzes caching policies and eviction trade-offs for ${t}.`,
+      difficulty: "Hard",
+      category: "Advanced"
+    },
+    {
+      question: `What mechanisms ensure fault tolerance and graceful degradation when underlying services for ${t} fail?`,
+      answer: `Implement circuit breakers (Resilience4j/Hystrix), graceful fallback content generators, exponential backoff retries with jitter, and health probes to fail fast while keeping the service active.`,
+      explanation: `Tests system resilience and fault tolerance patterns for ${t}.`,
+      difficulty: "Hard",
+      category: "Advanced"
+    },
+    {
+      question: `How do database indexes (B-Trees, Hash Indexes) optimize persistence layers backing ${t}?`,
+      answer: `B-Tree indexes optimize range scans to O(log N) disk IOs. Hash indexes optimize exact match lookups to O(1) IOs. Covering indexes eliminate table lookups by storing target projection columns.`,
+      explanation: `Covers database index structures and query optimization for ${t}.`,
+      difficulty: "Hard",
+      category: "Advanced"
+    },
+    {
+      question: `What are the trade-offs of isolating ${t} into a microservice versus an embedded library?`,
+      answer: `A microservice allows independent scaling and deployment but adds network serialization latency. An embedded library offers near-zero invocation latency but shares process memory limits.`,
+      explanation: `Compares microservice isolation vs in-process library embedding for ${t}.`,
+      difficulty: "Hard",
+      category: "Advanced"
+    },
+    {
+      question: `What security vulnerabilities must be audited when exposing APIs for ${t}?`,
+      answer: `Sanitize inputs against SQL Injection and XSS, enforce strict payload size limits to prevent Denial of Service (DoS) memory exhaustion, and mandate token-based authentication (JWT/OAuth2).`,
+      explanation: `Focuses on API security hardening and vulnerability prevention for ${t}.`,
+      difficulty: "Hard",
+      category: "Advanced"
+    },
+    {
+      question: `What key metrics and alerts should be monitored in production for ${t}?`,
+      answer: `Monitor p95/p99 latency histograms, throughput (RPS), error rates, CPU/RAM utilization, thread pool queue depth, garbage collection pause duration, and cache hit ratios.`,
+      explanation: `Measures production observability and alerting strategy for ${t}.`,
+      difficulty: "Hard",
+      category: "Advanced"
+    },
+    {
+      question: `How do you execute zero-downtime deployments when releasing updates for ${t}?`,
+      answer: `Use Canary releases or Blue/Green deployment environments. Gradually shift traffic to new version instances while monitoring automated health metrics and error rates.`,
+      explanation: `Evaluates zero-downtime deployment pipelines for ${t}.`,
+      difficulty: "Hard",
+      category: "Advanced"
+    },
+    {
+      question: `How can infrastructure costs associated with running ${t} at scale be optimized?`,
+      answer: `Right-size CPU/RAM limits based on load profiles, use auto-scaling groups with spot/preemptible instances for stateless workers, and compress cached data to lower memory costs.`,
+      explanation: `Assesses cloud infrastructure cost optimization for ${t}.`,
+      difficulty: "Hard",
+      category: "Advanced"
+    },
 
-  // 10 Scenario Based Questions
-  for (let i = 1; i <= 10; i++) {
-    questions.push({
-      question: `[Scenario Q${i}] Scenario: Your production application experiences high latency spikes when executing ${t}. How do you diagnose and resolve it?`,
-      answer: `First, isolate the issue using APM tracing tools. Inspect database queries, algorithm complexities, memory garbage collection logs, and network calls. Apply caching or algorithmic optimization to eliminate bottlenecks.`,
-      explanation: `Scenario questions evaluate real-world debugging workflows, systematic troubleshooting, and production incident response.`,
+    // --- 4. SCENARIO BASED QUESTIONS (10 Distinct Q&A) ---
+    {
+      question: `Scenario: Your application experiences latency spikes during peak traffic when executing ${t}. How do you resolve it?`,
+      answer: `1) Profile CPU/RAM with tracing tools to find the hotspot, 2) Check database query execution plans, 3) Replace O(N²) loops with O(N) hash lookups, and 4) Add a caching layer for frequent queries.`,
+      explanation: `Evaluates step-by-step performance troubleshooting for ${t}.`,
       difficulty: "Hard",
       category: "Scenario Based"
-    });
-  }
+    },
+    {
+      question: `Scenario: A production memory leak causes service crashes every 24 hours in the module handling ${t}. How do you debug it?`,
+      answer: `Take heap dumps before and after load tests. Inspect object retention paths to identify un-closed resources, un-removed event listeners, or static collections holding stale references, and add automated cleanup.`,
+      explanation: `Tests memory leak root-cause analysis and heap dump inspection for ${t}.`,
+      difficulty: "Hard",
+      category: "Scenario Based"
+    },
+    {
+      question: `Scenario: An external third-party API dependency for ${t} goes down. How do you maintain application availability?`,
+      answer: `Activate a circuit breaker to fail fast without blocking caller threads. Serve cached or local fallback data models, log degraded operations for offline sync, and notify administrators.`,
+      explanation: `Assesses third-party outage mitigation for ${t}.`,
+      difficulty: "Hard",
+      category: "Scenario Based"
+    },
+    {
+      question: `Scenario: Concurrent write operations to ${t} result in data corruption. How do you fix it?`,
+      answer: `Introduce lock-free atomic operations or explicit mutex locks around write critical sections. Alternatively, switch to an event-sourcing or immutable append-only data model.`,
+      explanation: `Solves concurrency race conditions and state corruption in ${t}.`,
+      difficulty: "Hard",
+      category: "Scenario Based"
+    },
+    {
+      question: `Scenario: Legacy code for ${t} lacks unit tests and crashes on null inputs. How do you refactor it safely?`,
+      answer: `1) Write characterization tests covering existing behavior, 2) Add defensive null/empty guards, 3) Extract helper methods to improve modularity, and 4) Verify all tests pass before deploying.`,
+      explanation: `Evaluates safe refactoring practices for untested legacy code in ${t}.`,
+      difficulty: "Hard",
+      category: "Scenario Based"
+    },
+    {
+      question: `Scenario: A surge of unexpected malformed requests hits ${t}. How do you prevent application failure?`,
+      answer: `Enforce strict schema validation at the API gateway level before passing payloads down. Reject invalid payloads immediately with HTTP 400 Bad Request and log IP addresses for rate limiting.`,
+      explanation: `Focuses on defensive boundary validation against malicious inputs for ${t}.`,
+      difficulty: "Hard",
+      category: "Scenario Based"
+    },
+    {
+      question: `Scenario: System database queries backing ${t} take 5+ seconds. How do you optimize them?`,
+      answer: `Analyze EXPLAIN execution plans. Add missing composite B-Tree indexes, eliminate SELECT * to fetch only required columns, and introduce query result caching in Redis.`,
+      explanation: `Tests database query optimization and indexing for ${t}.`,
+      difficulty: "Hard",
+      category: "Scenario Based"
+    },
+    {
+      question: `Scenario: You need to migrate data for ${t} to a new schema without taking the system offline. How do you execute this?`,
+      answer: `Use dual-write architecture: 1) Deploy code that writes to both old and new schemas, 2) Backfill historical records in background scripts, 3) Verify data parity, and 4) Switch read queries to the new schema.`,
+      explanation: `Covers zero-downtime database schema migration for ${t}.`,
+      difficulty: "Hard",
+      category: "Scenario Based"
+    },
+    {
+      question: `Scenario: A regression bug in ${t} slips into production. How do you handle incident response?`,
+      answer: `1) Immediately roll back to the last known stable release or toggle feature flag OFF, 2) Write a failing unit test reproducing the bug, 3) Fix the code, and 4) Conduct a blameless post-mortem.`,
+      explanation: `Assesses production incident response and post-mortem protocol for ${t}.`,
+      difficulty: "Hard",
+      category: "Scenario Based"
+    },
+    {
+      question: `Scenario: Client mobile apps experience battery drain when interacting with ${t}. How do you optimize client-side impact?`,
+      answer: `Reduce network payload size via field filtering or compression (Gzip/Brotli), batch network requests, shift heavy computations to background web workers, and implement local client caching.`,
+      explanation: `Evaluates client-side battery and network payload optimization for ${t}.`,
+      difficulty: "Hard",
+      category: "Scenario Based"
+    },
 
-  // 5 HR / Behavioural Questions
-  for (let i = 1; i <= 5; i++) {
-    questions.push({
-      question: `[HR / Behavioural Q${i}] Describe a situation where you had to make an architectural trade-off when adopting ${t} under tight deadlines.`,
-      answer: `I prioritized core functionality and robust error boundaries first, documenting technical debt for immediate follow-up. I communicated trade-offs clearly to stakeholders to ensure team alignment.`,
-      explanation: `Behavioural questions evaluate engineering communication, pragmatic prioritization, team collaboration, and accountability.`,
+    // --- 5. HR / BEHAVIOURAL QUESTIONS (5 Distinct Q&A) ---
+    {
+      question: `How would you explain the business trade-offs of ${t} to a non-technical stakeholder?`,
+      answer: `Translate technical terms into business outcomes: explain how optimizing ${t} speeds up user load times, increases conversion rates, and reduces cloud server hosting expenses.`,
+      explanation: `Tests ability to translate technical trade-offs into business impact.`,
       difficulty: "Medium",
       category: "HR / Behavioural"
-    });
-  }
+    },
+    {
+      question: `How do you resolve a technical disagreement with a peer during a code review for ${t}?`,
+      answer: `Focus on objective evidence: run benchmarks, write test cases covering edge conditions, profile memory usage, and reference established team style guides to reach consensus.`,
+      explanation: `Assesses constructive engineering collaboration and peer communication.`,
+      difficulty: "Medium",
+      category: "HR / Behavioural"
+    },
+    {
+      question: `When tight deadlines force a fast implementation of ${t}, how do you manage technical debt?`,
+      answer: `Deliver a robust core MVP with defensive error handling first. Log technical debt items in the project tracking backlog and schedule refactoring before tech debt accumulates.`,
+      explanation: `Evaluates pragmatic prioritization and tech debt management under pressure.`,
+      difficulty: "Medium",
+      category: "HR / Behavioural"
+    },
+    {
+      question: `How would you mentor a junior developer who is struggling to implement ${t}?`,
+      answer: `Break the problem into smaller steps: pair-program a simple manual dry-run on paper, guide them to build a brute-force working version first, and then coach them on optimizing it.`,
+      explanation: `Tests technical mentorship and junior developer guidance.`,
+      difficulty: "Medium",
+      category: "HR / Behavioural"
+    },
+    {
+      question: `Describe how you handled a past situation where a bug in ${t} reached production.`,
+      answer: `I took ownership immediately, assisted in rolling back the release, wrote a regression unit test covering the root cause, deployed the patch, and led a blameless post-mortem to prevent recurrence.`,
+      explanation: `Measures accountability, incident recovery, and continuous learning.`,
+      difficulty: "Medium",
+      category: "HR / Behavioural"
+    },
 
-  // 5 Coding Questions
-  for (let i = 1; i <= 5; i++) {
-    questions.push({
-      question: `[Coding Q${i}] Write a production-grade function in your language of choice demonstrating an optimal approach for ${t}.`,
-      answer: `Ensure input validation, handle boundary conditions (null/empty arrays), use optimal data structures (e.g. Map/Set for O(1) lookups), and return clear types.`,
-      explanation: `Coding questions evaluate hands-on syntax mastery, code cleanliness, boundary handling, and time/space complexity analysis.`,
+    // --- 6. HANDS-ON CODING QUESTIONS (5 Distinct Q&A) ---
+    {
+      question: `Write an optimal function for ${t} that handles null parameters and returns clean results.`,
+      answer: `Implementation includes early parameter validation, single pass O(N) or binary search O(log N) traversal, and explicit return types without throwing unexpected exceptions.`,
+      explanation: `Evaluates clean hands-on syntax and defensive coding for ${t}.`,
       difficulty: "Medium",
       category: "Coding"
-    });
-  }
-
-  return questions;
+    },
+    {
+      question: `Modify a solution for ${t} to reduce auxiliary space complexity down to O(1).`,
+      answer: `Replace auxiliary lists or Hash Maps with in-place pointer manipulation or running accumulators, maintaining O(1) space complexity.`,
+      explanation: `Tests in-place memory optimization skills for ${t}.`,
+      difficulty: "Medium",
+      category: "Coding"
+    },
+    {
+      question: `Implement a thread-safe wrapper class around ${t} to handle concurrent parallel executions.`,
+      answer: `Encapsulate logic inside synchronized methods or read-write locks (ReentrantReadWriteLock), allowing concurrent read access while locking writes atomically.`,
+      explanation: `Checks concurrent thread-safe class implementation for ${t}.`,
+      difficulty: "Medium",
+      category: "Coding"
+    },
+    {
+      question: `Write an online handler class for ${t} that accepts streaming inputs and updates running metrics.`,
+      answer: `Use min-heaps, max-heaps, or sliding window queues to process incoming stream items in O(1) or O(log K) time per event without storing full historical history.`,
+      explanation: `Tests streaming data pipeline implementation for ${t}.`,
+      difficulty: "Medium",
+      category: "Coding"
+    },
+    {
+      question: `Construct a comprehensive unit test suite for ${t} covering happy paths and edge cases.`,
+      answer: `Write tests covering standard arrays, single element arrays, empty arrays, duplicate values, extreme negative numbers, and boundary exception throwing.`,
+      explanation: `Evaluates automated unit test suite construction for ${t}.`,
+      difficulty: "Medium",
+      category: "Coding"
+    }
+  ];
 }
 
 export function getFallbackCheatSheet(topic: string): any[] {
