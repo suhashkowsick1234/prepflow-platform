@@ -1,5 +1,5 @@
-import app from "./app.js";
-import { logger } from "./lib/logger.js";
+import app from "./app";
+import { logger } from "./lib/logger";
 
 const isVercel = process.env.VERCEL === "1";
 
@@ -7,9 +7,7 @@ if (!isVercel) {
   const rawPort = process.env.PORT;
 
   if (!rawPort) {
-    throw new Error(
-      "PORT environment variable is required but was not provided."
-    );
+    throw new Error("PORT environment variable is required but was not provided.");
   }
 
   const port = Number(rawPort);
