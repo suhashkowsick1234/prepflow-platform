@@ -15,13 +15,20 @@ import { cn } from "@/lib/utils";
 
 type CategoryFilter = "all" | "basic" | "intermediate" | "advanced" | "scenario" | "hr" | "coding";
 
+function has50UniqueQuestions(qs: any[]): boolean {
+  if (!Array.isArray(qs) || qs.length < 50) return false;
+  const qSet = new Set(qs.map((q) => (q?.question || "").trim().toLowerCase()));
+  const aSet = new Set(qs.map((q) => (q?.answer || "").trim().toLowerCase()));
+  return qSet.size >= 50 && aSet.size >= 50;
+}
+
 export function InterviewQuestionsModule({ workspace }: { workspace: LearningWorkspace }) {
   const { currentSessionId, updateSessionWorkspace, animationsEnabled } = useWorkspaceStore();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [expandedId, setExpandedId] = useState<number | null>(0);
 
-  const initialQuestions = (Array.isArray(workspace?.interviewQuestions) && workspace.interviewQuestions.length >= 50)
+  const initialQuestions = has50UniqueQuestions(workspace?.interviewQuestions)
     ? workspace.interviewQuestions
     : getFallbackInterviewQuestions(workspace?.title || "Topic");
 
@@ -30,12 +37,16 @@ export function InterviewQuestionsModule({ workspace }: { workspace: LearningWor
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   React.useEffect(() => {
-    const updated = (Array.isArray(workspace?.interviewQuestions) && workspace.interviewQuestions.length >= 50)
-      ? workspace.interviewQuestions
-      : getFallbackInterviewQuestions(workspace?.title || "Topic");
+    let updated = workspace?.interviewQuestions;
+    if (!has50UniqueQuestions(updated)) {
+      updated = getFallbackInterviewQuestions(workspace?.title || "Topic");
+      if (currentSessionId) {
+        updateSessionWorkspace(currentSessionId, { interviewQuestions: updated });
+      }
+    }
     setQuestions(updated);
     setExpandedId(0);
-  }, [workspace?.interviewQuestions, workspace?.title]);
+  }, [workspace?.interviewQuestions, workspace?.title, currentSessionId, updateSessionWorkspace]);
 
   const handleLoadMore = async () => {
     if (isLoadingMore || questions.length >= 50) return;
@@ -106,12 +117,12 @@ export function InterviewQuestionsModule({ workspace }: { workspace: LearningWor
 
   const categories: { id: CategoryFilter; label: string; count: number }[] = [
     { id: "all", label: "All Qs", count: questions.length },
-    { id: "basic", label: "Basic", count: questions.filter(q => (q.category || "").toLowerCase().includes("basic")).length },
-    { id: "intermediate", label: "Intermediate", count: questions.filter(q => (q.category || "").toLowerCase().includes("intermed")).length },
-    { id: "advanced", label: "Advanced", count: questions.filter(q => (q.category || "").toLowerCase().includes("advanc")).length },
-    { id: "scenario", label: "Scenario", count: questions.filter(q => (q.category || "").toLowerCase().includes("scenario")).length },
-    { id: "hr", label: "HR", count: questions.filter(q => (q.category || "").toLowerCase().includes("hr") || (q.category || "").toLowerCase().includes("behavioural")).length },
-    { id: "coding", label: "Coding", count: questions.filter(q => (q.category || "").toLowerCase().includes("coding") || (q.category || "").toLowerCase().includes("code")).length },
+    { id: "basic", label: "Basic (10)", count: questions.filter(q => (q.category || "").toLowerCase().includes("basic")).length },
+    { id: "intermediate", label: "Intermediate (10)", count: questions.filter(q => (q.category || "").toLowerCase().includes("intermed")).length },
+    { id: "advanced", label: "Advanced (10)", count: questions.filter(q => (q.category || "").toLowerCase().includes("advanc")).length },
+    { id: "scenario", label: "Scenario (10)", count: questions.filter(q => (q.category || "").toLowerCase().includes("scenario")).length },
+    { id: "hr", label: "HR (5)", count: questions.filter(q => (q.category || "").toLowerCase().includes("hr") || (q.category || "").toLowerCase().includes("behavioural")).length },
+    { id: "coding", label: "Coding (5)", count: questions.filter(q => (q.category || "").toLowerCase().includes("coding") || (q.category || "").toLowerCase().includes("code")).length },
   ];
 
   return (
@@ -123,7 +134,7 @@ export function InterviewQuestionsModule({ workspace }: { workspace: LearningWor
             Technical Interview Preparation ({questions.length} Questions)
           </h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            50 categorized interview questions with answers, explanations, and difficulty ratings
+            50 100% unique, topic-specific interview questions with answers, explanations, and difficulty ratings
           </p>
         </div>
       </div>
@@ -220,7 +231,7 @@ export function InterviewQuestionsModule({ workspace }: { workspace: LearningWor
                           {q.explanation && (
                             <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 space-y-1">
                               <h4 className="text-xs font-bold text-primary flex items-center gap-1.5">
-                                <Sparkles className="w-3.5 h-3.5" /> Conceptual Explanation & Key Takeaways
+                                <Sparkles className="w-3.5 h-3.5" /> Conceptual Explanation &amp; Key Takeaways
                               </h4>
                               <p className="text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap">
                                 {q.explanation}
@@ -250,3 +261,5 @@ export function InterviewQuestionsModule({ workspace }: { workspace: LearningWor
     </div>
   );
 }
+
+export default InterviewQuestionsModule;
