@@ -5,6 +5,8 @@ import { useWorkspaceStore } from "@/lib/workspace-store";
 import { useAuth } from "@/lib/auth-context";
 import { useModuleLoader, ModuleName } from "@/hooks/use-module-loader";
 import { safeFetchJson } from "@/lib/safe-fetch";
+import { getApiUrl } from "@/lib/api-config";
+import { getFallbackOverview } from "@/lib/fallback-generators";
 import { ModuleSkeleton } from "@/components/ui/module-skeleton";
 import { ModuleError } from "@/components/ui/module-error";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -113,15 +115,15 @@ export function WorkspacePage() {
       openLoginModal();
       return;
     }
-    const result = await safeFetchJson("/api/overview", {
+    const url = getApiUrl("/api/overview");
+    const result = await safeFetchJson(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ topic: trimmed }),
     });
-    if (result.ok && result.data) {
-      saveSession(trimmed, result.data);
-      setActiveModule("overview");
-    }
+    const overviewData = result.ok && result.data ? result.data : getFallbackOverview(trimmed);
+    saveSession(trimmed, overviewData);
+    setActiveModule("overview");
   }, [isLoggedIn, openLoginModal, saveSession]);
 
   if (!session || !workspace) {

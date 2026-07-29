@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { setCachedModule } from "@/lib/module-cache";
 import { safeFetchJson } from "@/lib/safe-fetch";
+import { getApiUrl } from "@/lib/api-config";
+import { getFallbackQuiz } from "@/lib/fallback-generators";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2,
@@ -355,26 +357,27 @@ export function QuizModule({
 
     setIsGeneratingMore(true);
     try {
-      const result = await safeFetchJson("/api/quiz", {
+      const url = getApiUrl("/api/quiz");
+      const result = await safeFetchJson(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic: workspace.title }),
       });
-      if (result.ok && Array.isArray(result.data?.quiz) && result.data.quiz.length > 0) {
-        // Save the updated quiz to IndexedDB cache!
-        await setCachedModule(workspace.title, "quiz", { quiz: result.data.quiz });
+      const quizList = (result.ok && Array.isArray(result.data?.quiz) && result.data.quiz.length > 0)
+        ? result.data.quiz
+        : getFallbackQuiz(workspace.title);
 
-        setActiveQuiz(result.data.quiz);
-        setCurrentIndex(0);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setScore(0);
-        setAnswers([]);
-        setView("quiz");
+      await setCachedModule(workspace.title, "quiz", { quiz: quizList });
+      setActiveQuiz(quizList);
+      setCurrentIndex(0);
+      setSelectedOption(null);
+      setShowFeedback(false);
+      setScore(0);
+      setAnswers([]);
+      setView("quiz");
 
-        if (currentSessionId) {
-          updateSessionWorkspace(currentSessionId, { quiz: result.data.quiz });
-        }
+      if (currentSessionId) {
+        updateSessionWorkspace(currentSessionId, { quiz: quizList });
       }
     } catch (e) {
       console.error("Failed to generate more quiz questions:", e);

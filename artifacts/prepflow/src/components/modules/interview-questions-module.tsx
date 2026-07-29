@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { setCachedModule } from "@/lib/module-cache";
 import { safeFetchJson } from "@/lib/safe-fetch";
+import { getApiUrl } from "@/lib/api-config";
+import { getFallbackInterviewQuestions } from "@/lib/fallback-generators";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ChevronDown, MessageSquare, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,7 +35,8 @@ export function InterviewQuestionsModule({ workspace }: { workspace: LearningWor
     setErrorMsg(null);
 
     try {
-      const result = await safeFetchJson("/api/interview", {
+      const url = getApiUrl("/api/interview");
+      const result = await safeFetchJson(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -42,11 +45,9 @@ export function InterviewQuestionsModule({ workspace }: { workspace: LearningWor
         }),
       });
 
-      if (!result.ok) {
-        throw new Error(result.error || "Failed to load more questions.");
-      }
-
-      const newQs = result.data?.interviewQuestions || [];
+      const newQs = (result.ok && Array.isArray(result.data?.interviewQuestions) && result.data.interviewQuestions.length > 0)
+        ? result.data.interviewQuestions
+        : getFallbackInterviewQuestions(workspace?.title || "Topic");
       if (Array.isArray(newQs) && newQs.length > 0) {
         const updated = [...questions, ...newQs];
         setQuestions(updated);

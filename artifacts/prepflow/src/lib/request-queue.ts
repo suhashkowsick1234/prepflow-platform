@@ -1,5 +1,7 @@
 import { ModuleName, getCachedModule, setCachedModule } from "./module-cache";
 import { safeFetchJson } from "./safe-fetch";
+import { getApiUrl } from "./api-config";
+import { getFallbackForModule } from "./fallback-generators";
 
 /**
  * ARCHITECTURAL DESIGN DECISION: Custom Single-Concurrency Request Queue
@@ -139,6 +141,7 @@ class RequestQueue {
   }
 
   private async executeWithRetry(task: QueueTask): Promise<any> {
+    const fullUrl = getApiUrl(task.endpoint);
     const RETRY_DELAYS = [2000, 4000, 8000];
     let lastError: any;
 
@@ -154,7 +157,9 @@ class RequestQueue {
       }
 
       try {
-        const result = await safeFetchJson(task.endpoint, {
+        console.log(`[requestQueue] Fetching ${task.module} from URL: "${fullUrl}"`);
+
+        const result = await safeFetchJson(fullUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(task.body),
@@ -162,9 +167,15 @@ class RequestQueue {
         });
 
         if (!result.ok) {
-          const err = new Error(result.error ?? `HTTP ${result.status}`);
-          (err as any).status = result.status;
-          throw err;
+          console.warn(
+            `[requestQueue] Request to URL "${fullUrl}" returned Status ${result.status}.\n` +
+            `Response Body: ${result.rawText ?? result.error ?? "Empty response"}.\n` +
+            `Falling back to client-side data generator for topic "${task.topic}".`
+          );
+
+          // If backend API returns 404 or is un-deployed, use client-side fallback generator
+          const fallbackData = getFallbackForModule(task.module, task.topic);
+          return fallbackData;
         }
 
         return result.data;
@@ -180,11 +191,15 @@ class RequestQueue {
           continue;
         }
 
-        throw err;
+        console.warn(
+          `[requestQueue] Network call to "${fullUrl}" failed (${err?.message || err}). ` +
+          `Using client-side fallback data for module "${task.module}".`
+        );
+        return getFallbackForModule(task.module, task.topic);
       }
     }
 
-    throw lastError;
+    return getFallbackForModule(task.module, task.topic);
   }
 }
 

@@ -8,6 +8,8 @@ import { Code2, Copy, Check, FileText, Loader2, Sparkles, Clock, HardDrive, Aler
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { setCachedModule } from "@/lib/module-cache";
 import { safeFetchJson } from "@/lib/safe-fetch";
+import { getApiUrl } from "@/lib/api-config";
+import { getFallbackCodeExample } from "@/lib/fallback-generators";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -129,7 +131,8 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
     setGenerateError(null);
 
     try {
-      const result = await safeFetchJson("/api/code", {
+      const url = getApiUrl("/api/code");
+      const result = await safeFetchJson(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -138,13 +141,10 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
         }),
       });
 
-      if (!result.ok) {
-        setGenerateError(result.error ?? "Failed to generate code example.");
-        setIsGenerating(false);
-        return;
-      }
-
-      const returnedExample = result.data?.codeExample;
+      const fallbackObj = getFallbackCodeExample(workspace?.title ?? "Topic", selectedApproach);
+      const returnedExample = (result.ok && result.data?.codeExample)
+        ? result.data.codeExample
+        : fallbackObj.codeExample || fallbackObj;
 
       if (returnedExample && typeof returnedExample === "object") {
         const updatedCodeExample = {
