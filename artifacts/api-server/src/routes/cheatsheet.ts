@@ -1,23 +1,23 @@
 import { Router, type IRouter } from "express";
 import Groq from "groq-sdk";
 import { callGroqWithModelFallback, safeParseJson } from "./groq-client";
-import { getFallbackCheatSheet } from "./fallback-generators";
+import { getFallbackCheatSheet, validateTopicRelevance } from "./fallback-generators";
 
 const router: IRouter = Router();
 
 const SYSTEM_PROMPT = `You are a technical editor writing revision cheat sheets. Return ONLY raw valid JSON. No markdown fences.
 Rules:
-- Generate 5 cheat sheet sections.
-- Each section must have 5-8 short, crisp, interview-friendly revision bullet points.`;
+- Generate 5 cheat sheet sections specifically for the requested topic.
+- Each section must have 5-8 short, crisp, interview-friendly revision bullet points (25+ points total).`;
 
-const USER_PROMPT = (topic: string) => `Generate 5 cheat sheet sections for: "${topic}"
+const USER_PROMPT = (topic: string) => `Generate 5 cheat sheet sections specifically for topic: "${topic}"
 
 Return ONLY this JSON structure:
 {
   "cheatSheet": [
     {
       "category": "Section Name",
-      "points": ["Short revision bullet point 1", "Short revision bullet point 2"]
+      "points": ["Short revision bullet point 1 for ${topic}", "Short revision bullet point 2 for ${topic}"]
     }
   ]
 }`;
@@ -42,7 +42,9 @@ function normalizeCheatSheet(parsed: any, topic: string): any[] {
         : [`Core takeaways and summary points for ${topic}`],
     }));
 
-  if (normalized.length > 0) return normalized;
+  if (normalized.length > 0 && validateTopicRelevance(normalized, topic)) {
+    return normalized;
+  }
   return getFallbackCheatSheet(topic);
 }
 

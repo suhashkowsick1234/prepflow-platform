@@ -1,13 +1,13 @@
 import { Router, type IRouter } from "express";
 import Groq from "groq-sdk";
 import { callGroqWithModelFallback, safeParseJson } from "./groq-client";
-import { getFallbackInterviewQuestions } from "./fallback-generators";
+import { getFallbackInterviewQuestions, validateTopicRelevance } from "./fallback-generators";
 
 const router: IRouter = Router();
 
 const SYSTEM_PROMPT = `You are an expert technical interviewer. Return ONLY raw valid JSON. No markdown fences.
 Rules:
-- Generate 10 interview questions for the topic.
+- Generate 10-15 interview questions specifically for the topic.
 - First question MUST ALWAYS be "What is <topic>?" with complete definition, applications, advantages, and limitations.
 - difficulty: "easy" | "medium" | "hard"
 - category: "basic" | "intermediate" | "advanced" | "scenario" | "hr" | "coding"`;
@@ -17,14 +17,14 @@ const USER_PROMPT = (topic: string, existing: string[]) => {
     ? `\nDo NOT repeat these questions:\n${existing.slice(0, 20).map((q, i) => `${i + 1}. ${q}`).join("\n")}`
     : "";
 
-  return `Generate 10 interview questions for: "${topic}"${excludeText}
+  return `Generate interview questions specifically for topic: "${topic}"${excludeText}
 
 Return ONLY this JSON structure:
 {
   "interviewQuestions": [
     {
       "question": "What is ${topic}?",
-      "answer": "Comprehensive answer explaining definition, key applications, pros and cons.",
+      "answer": "Comprehensive answer explaining definition, key applications, pros and cons of ${topic}.",
       "difficulty": "easy",
       "category": "basic"
     }
@@ -52,7 +52,9 @@ function normalizeInterview(parsed: any, topic: string): any[] {
       category: String(q.category || "basic"),
     }));
 
-  if (normalized.length > 0) return normalized;
+  if (normalized.length > 0 && validateTopicRelevance(normalized, topic)) {
+    return normalized;
+  }
   return getFallbackInterviewQuestions(topic);
 }
 

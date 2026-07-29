@@ -1,19 +1,19 @@
 import { Router, type IRouter } from "express";
 import Groq from "groq-sdk";
 import { callGroqWithModelFallback, safeParseJson } from "./groq-client";
-import { getFallbackRelatedTopics } from "./fallback-generators";
+import { getFallbackRelatedTopics, validateTopicRelevance } from "./fallback-generators";
 
 const router: IRouter = Router();
 
 const SYSTEM_PROMPT = `You are a learning path curator. Return ONLY raw valid JSON. No markdown fences.
 Rules:
-- Generate 5 highly relevant related topics for study.`;
+- Generate 8-10 semantically related topics for study specifically for the requested topic.`;
 
-const USER_PROMPT = (topic: string) => `Generate 5 related topics for: "${topic}"
+const USER_PROMPT = (topic: string) => `Generate 8-10 semantically related topics for: "${topic}"
 
 Return ONLY this JSON structure:
 {
-  "relatedTopics": ["Topic 1", "Topic 2", "Topic 3", "Topic 4", "Topic 5"]
+  "relatedTopics": ["Related Topic 1", "Related Topic 2", "Related Topic 3"]
 }`;
 
 function normalizeRelated(parsed: any, topic: string): string[] {
@@ -29,7 +29,9 @@ function normalizeRelated(parsed: any, topic: string): string[] {
     .map((item: any) => (typeof item === "string" ? item : item?.title || item?.name || ""))
     .filter(Boolean);
 
-  if (strings.length > 0) return strings;
+  if (strings.length > 0 && validateTopicRelevance(strings, topic)) {
+    return strings;
+  }
   return getFallbackRelatedTopics(topic);
 }
 
@@ -58,7 +60,7 @@ router.post("/related", async (req, res): Promise<void> => {
         { role: "user", content: USER_PROMPT(cleanTopic) },
       ],
       req.log,
-      1000
+      1500
     );
 
     const parsed = safeParseJson(raw, {});

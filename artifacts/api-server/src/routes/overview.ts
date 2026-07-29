@@ -1,51 +1,68 @@
 import { Router, type IRouter } from "express";
 import Groq from "groq-sdk";
 import { callGroqWithModelFallback, safeParseJson } from "./groq-client";
+import { getFallbackOverview, validateTopicRelevance } from "./fallback-generators";
 
 const router: IRouter = Router();
 
-const SYSTEM_PROMPT = `You are an expert educational content generator. Return ONLY raw valid JSON. No markdown fences.
+const SYSTEM_PROMPT = `You are a principal software engineer and computer science educator. Return ONLY raw valid JSON. No markdown fences.
 Rules:
-- Generate a high-level overview of the topic.
-- Keep summary concise (2-3 sentences max).
-- If topic involves programming/CS/algorithms, set isProgramming to true. Otherwise false.`;
+- Generate a comprehensive overview and executive summary for the requested topic.
+- Executive summary MUST contain 6-8 detailed paragraphs covering definition, core mechanics, real-world applications, interview importance, common pitfalls, and architectural trade-offs.
+- Key points MUST contain 8-12 actionable takeaway points.
+- If topic involves programming/CS/algorithms, set isProgramming to true.`;
 
-const USER_PROMPT = (topic: string) => `Generate overview JSON for topic: "${topic}"
+const USER_PROMPT = (topic: string) => `Generate comprehensive overview and executive summary JSON specifically for topic: "${topic}"
 
 Return ONLY this JSON structure:
 {
   "title": "${topic}",
-  "description": "Short 1-2 sentence description",
-  "estimatedStudyTime": "2-3 hours",
+  "description": "Comprehensive learning guide and architectural overview for ${topic}",
+  "estimatedStudyTime": "3-4 hours",
   "difficulty": "Intermediate",
-  "summary": "2-3 concise sentences explaining what the topic is, why it matters, and core idea",
-  "keyPoints": ["5-7 key takeaway bullet points"],
+  "summary": "Paragraph 1: Definition\\n\\nParagraph 2: Why it matters\\n\\nParagraph 3: Core mechanics\\n\\nParagraph 4: Industry applications\\n\\nParagraph 5: Technical interview importance\\n\\nParagraph 6: Common pitfalls and anti-patterns",
+  "keyPoints": [
+    "Core Mechanics: ...",
+    "Algorithmic Efficiency: ...",
+    "State Management: ...",
+    "Scalability: ...",
+    "Guardrails: ...",
+    "Style Guide: ...",
+    "Edge Cases: ...",
+    "Testing: ...",
+    "Interview Readiness: ..."
+  ],
   "practiceTips": ["Actionable tip 1", "Actionable tip 2"],
   "isProgramming": true
 }`;
 
 function normalizeOverview(parsed: any, topic: string): any {
-  return {
+  if (!parsed || typeof parsed !== "object") {
+    return getFallbackOverview(topic);
+  }
+
+  const result = {
     title: String(parsed?.title || topic),
     description: String(parsed?.description || `Master the core concepts, principles, and applications of ${topic}.`),
-    estimatedStudyTime: String(parsed?.estimatedStudyTime || "2-3 hours"),
+    estimatedStudyTime: String(parsed?.estimatedStudyTime || "3-4 hours"),
     difficulty: ["Beginner", "Intermediate", "Advanced"].includes(parsed?.difficulty)
       ? parsed.difficulty
       : "Intermediate",
-    summary: String(parsed?.summary || `${topic} is a key fundamental concept in computer science and software development.`),
-    keyPoints: Array.isArray(parsed?.keyPoints) && parsed.keyPoints.length > 0
+    summary: String(parsed?.summary || `${topic} is a fundamental concept in computer science and software development.`),
+    keyPoints: Array.isArray(parsed?.keyPoints) && parsed.keyPoints.length >= 5
       ? parsed.keyPoints.map(String)
-      : [
-          `Understanding the core principles of ${topic}`,
-          `Practical applications and industry standard practices`,
-          `Performance considerations and time/space trade-offs`,
-          `Common edge cases and debugging techniques`,
-        ],
+      : getFallbackOverview(topic).keyPoints,
     practiceTips: Array.isArray(parsed?.practiceTips)
       ? parsed.practiceTips.map(String)
-      : [`Practice building small projects with ${topic}`, `Review interview questions and code implementations`],
+      : [`Practice building production systems with ${topic}`, `Review interview questions and code implementations`],
     isProgramming: Boolean(parsed?.isProgramming ?? true),
   };
+
+  if (!validateTopicRelevance(result, topic)) {
+    return getFallbackOverview(topic);
+  }
+
+  return result;
 }
 
 router.post("/overview", async (req, res): Promise<void> => {
@@ -55,9 +72,11 @@ router.post("/overview", async (req, res): Promise<void> => {
     return;
   }
 
+  const cleanTopic = topic.trim();
   const apiKey = process.env.GROQ_API_KEY;
+
   if (!apiKey) {
-    res.status(500).json({ success: false, message: "AI service not configured." });
+    res.json(getFallbackOverview(cleanTopic));
     return;
   }
 
@@ -68,22 +87,20 @@ router.post("/overview", async (req, res): Promise<void> => {
       groq,
       [
         { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: USER_PROMPT(topic.trim()) },
+        { role: "user", content: USER_PROMPT(cleanTopic) },
       ],
       req.log,
-      2000
+      3000
     );
 
     const parsed = safeParseJson(raw, {});
-    const overview = normalizeOverview(parsed, topic.trim());
+    const overview = normalizeOverview(parsed, cleanTopic);
     res.json(overview);
   } catch (err: unknown) {
-    const error = err as { status?: number };
-    if (error?.status === 429) {
-      res.status(429).json({ success: false, message: "Rate limit reached. Retry in a moment." });
-    } else {
-      res.status(500).json({ success: false, message: "Failed to generate overview." });
+    if (req.log?.warn) {
+      req.log.warn({ err }, "Overview LLM call failed. Returning deterministic fallback.");
     }
+    res.json(getFallbackOverview(cleanTopic));
   }
 });
 

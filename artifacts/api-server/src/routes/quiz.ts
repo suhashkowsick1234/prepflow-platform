@@ -1,25 +1,26 @@
 import { Router, type IRouter } from "express";
 import Groq from "groq-sdk";
 import { callGroqWithModelFallback, safeParseJson } from "./groq-client";
-import { getFallbackQuiz } from "./fallback-generators";
+import { getFallbackQuiz, validateTopicRelevance } from "./fallback-generators";
 
 const router: IRouter = Router();
 
 const SYSTEM_PROMPT = `You are an expert quiz generator. Return ONLY raw valid JSON. No markdown fences.
 Rules:
-- Generate 10-12 MCQs for the requested topic.
-- Each question MUST have: question text, 4 distinct options, correctIndex (0-3), and detailed explanation.`;
+- Generate EXACTLY 10 high-quality MCQs for the requested topic.
+- Mix difficulties: Easy, Medium, Hard.
+- Each question MUST have: question text specifically about the topic, 4 distinct options, correctIndex (0-3), and detailed explanation.`;
 
-const USER_PROMPT = (topic: string) => `Generate 10-12 MCQs for topic: "${topic}"
+const USER_PROMPT = (topic: string) => `Generate 10 MCQs specifically for topic: "${topic}"
 
 Return ONLY this JSON structure:
 {
   "quiz": [
     {
-      "question": "Question text?",
+      "question": "Question specifically about ${topic}?",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctIndex": 0,
-      "explanation": "Explanation why Option A is correct"
+      "explanation": "Detailed explanation why Option A is correct for ${topic}"
     }
   ]
 }`;
@@ -55,7 +56,9 @@ function normalizeQuiz(parsed: any, topic: string): any[] {
       };
     });
 
-  if (normalized.length > 0) return normalized;
+  if (normalized.length > 0 && validateTopicRelevance(normalized, topic)) {
+    return normalized;
+  }
   return getFallbackQuiz(topic);
 }
 
