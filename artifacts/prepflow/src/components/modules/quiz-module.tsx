@@ -331,7 +331,11 @@ export function QuizModule({
 }) {
   const { animationsEnabled, currentSessionId, saveQuizResult, updateSessionWorkspace } = useWorkspaceStore();
   const [view, setView] = useState<QuizView>("quiz");
-  const [activeQuiz, setActiveQuiz] = useState<QuizQuestion[]>(workspace.quiz ?? []);
+  const initialQuiz = (Array.isArray(workspace.quiz) && workspace.quiz.length >= 10)
+    ? workspace.quiz
+    : getFallbackQuiz(workspace.title || "Topic");
+
+  const [activeQuiz, setActiveQuiz] = useState<QuizQuestion[]>(initialQuiz);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -340,14 +344,17 @@ export function QuizModule({
   const [isGeneratingMore, setIsGeneratingMore] = useState(false);
 
   React.useEffect(() => {
-    setActiveQuiz(workspace.quiz ?? []);
+    const updated = (Array.isArray(workspace.quiz) && workspace.quiz.length >= 10)
+      ? workspace.quiz
+      : getFallbackQuiz(workspace.title || "Topic");
+    setActiveQuiz(updated);
     setCurrentIndex(0);
     setSelectedOption(null);
     setShowFeedback(false);
     setScore(0);
     setAnswers([]);
     setView("quiz");
-  }, [workspace.quiz]);
+  }, [workspace.quiz, workspace.title]);
 
   const handleGenerateMoreInternal = useCallback(async () => {
     if (onGenerateMore) {

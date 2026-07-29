@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, ChevronDown, ChevronUp, AlignLeft } from "lucide-react";
 import { useWorkspaceStore } from "@/lib/workspace-store";
+import { getFallbackSummary } from "@/lib/fallback-generators";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function SummaryModule({ workspace }: { workspace: LearningWorkspace }) {
@@ -11,7 +12,9 @@ export function SummaryModule({ workspace }: { workspace: LearningWorkspace }) {
   const [copied, setCopied] = useState(false);
   const { animationsEnabled } = useWorkspaceStore();
 
-  const summaryText = workspace?.summary || workspace?.description || "Summary details loading...";
+  const summaryText = (workspace?.summary && workspace.summary.length > 200)
+    ? workspace.summary
+    : getFallbackSummary(workspace?.title || "Topic");
 
   const handleCopy = () => {
     try {

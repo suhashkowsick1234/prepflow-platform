@@ -68,9 +68,10 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
 
-  const codeData: any = workspace?.codeExample && typeof workspace.codeExample === "object"
+  const fallbackCodeObj = getFallbackCodeExample(workspace?.title || "Topic", selectedApproach);
+  const codeData: any = (workspace?.codeExample && typeof workspace.codeExample === "object" && Object.keys(workspace.codeExample).length > 1)
     ? workspace.codeExample
-    : {};
+    : fallbackCodeObj.codeExample || fallbackCodeObj;
 
   useEffect(() => {
     if (!document.getElementById("prism-css")) {
@@ -267,6 +268,14 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
               </div>
               {approachData.explanation && (
                 <p className="text-sm text-foreground/90 leading-relaxed">{approachData.explanation}</p>
+              )}
+              {approachData.dryRun && (
+                <div className="p-4 rounded-lg bg-secondary/50 border border-border/50 text-xs font-mono space-y-1">
+                  <span className="font-bold text-primary font-sans flex items-center gap-1.5 mb-1">
+                    <Sparkles className="w-3.5 h-3.5" /> Dry Run Walkthrough:
+                  </span>
+                  <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">{approachData.dryRun}</p>
+                </div>
               )}
             </CardContent>
           </Card>

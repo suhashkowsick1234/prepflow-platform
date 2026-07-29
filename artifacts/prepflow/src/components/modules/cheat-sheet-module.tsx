@@ -3,6 +3,7 @@ import { LearningWorkspace } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useWorkspaceStore } from "@/lib/workspace-store";
+import { getFallbackCheatSheet } from "@/lib/fallback-generators";
 import { motion } from "framer-motion";
 import { FileText, Copy, Check, Sparkles } from "lucide-react";
 
@@ -10,7 +11,9 @@ export function CheatSheetModule({ workspace }: { workspace: LearningWorkspace }
   const { animationsEnabled } = useWorkspaceStore();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const sections = Array.isArray(workspace?.cheatSheet) ? workspace.cheatSheet : [];
+  const sections = (Array.isArray(workspace?.cheatSheet) && workspace.cheatSheet.length > 0)
+    ? workspace.cheatSheet
+    : getFallbackCheatSheet(workspace?.title || "Topic");
 
   const copyText = (text: string, key: string) => {
     try {
@@ -27,19 +30,6 @@ export function CheatSheetModule({ workspace }: { workspace: LearningWorkspace }
     copyText(text, `section-${idx}`);
   };
 
-  if (sections.length === 0) {
-    return (
-      <div className="text-center py-16 text-muted-foreground">
-        <FileText className="w-10 h-10 mx-auto mb-3 opacity-40 animate-pulse" />
-        <p className="text-sm animate-pulse">Loading cheat sheet...</p>
-        <div className="mt-4 space-y-3 max-w-md mx-auto">
-          <div className="h-20 bg-muted/50 rounded-xl animate-pulse" />
-          <div className="h-20 bg-muted/30 rounded-xl animate-pulse" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -49,14 +39,20 @@ export function CheatSheetModule({ workspace }: { workspace: LearningWorkspace }
             Revision Cheat Sheet
           </h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Concise, interview-friendly bullet points for fast revision
+            Concise, interview-friendly bullet points for fast revision (25+ key points)
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-        {sections.map((section, idx) => {
-          const points = Array.isArray(section?.points) ? section.points : [];
+        {sections.map((section: any, idx: number) => {
+          const categoryName = section?.category || section?.title || `Section ${idx + 1}`;
+          const points: string[] = Array.isArray(section?.points)
+            ? section.points
+            : Array.isArray(section?.bullets)
+            ? section.bullets
+            : [];
+
           return (
             <motion.div
               key={idx}
@@ -69,12 +65,12 @@ export function CheatSheetModule({ workspace }: { workspace: LearningWorkspace }
                 <CardHeader className="bg-muted/40 pb-3 border-b border-border/50 flex flex-row items-center justify-between space-y-0">
                   <CardTitle className="text-base font-bold text-primary flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-primary/70" />
-                    {section?.category || `Section ${idx + 1}`}
+                    {categoryName}
                   </CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => copySection(section?.category || "Section", points, idx)}
+                    onClick={() => copySection(categoryName, points, idx)}
                     className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
                   >
                     {copiedKey === `section-${idx}` ? (

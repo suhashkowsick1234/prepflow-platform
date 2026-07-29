@@ -130,10 +130,6 @@ export function WorkspacePage() {
     return null;
   }
 
-  const hasCode =
-    workspace.codeExample?.isProgramming === true ||
-    (codeLoader.data as any)?.codeExample?.isProgramming === true;
-
   const navItems: { id: ModuleType; label: string; icon: React.ReactNode }[] = [
     { id: "overview", label: "Overview", icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: "summary", label: "Executive Summary", icon: <FileText className="w-4 h-4" /> },
@@ -141,7 +137,7 @@ export function WorkspacePage() {
     { id: "quiz", label: "MCQ Quiz", icon: <Target className="w-4 h-4" /> },
     { id: "interview", label: "Interview Q's", icon: <MessageSquare className="w-4 h-4" /> },
     { id: "cheatsheet", label: "Revision Cheat Sheet", icon: <FileCode2 className="w-4 h-4" /> },
-    ...(hasCode ? [{ id: "code" as const, label: "Coding Examples", icon: <Code2 className="w-4 h-4" /> }] : []),
+    { id: "code", label: "Coding Examples", icon: <Code2 className="w-4 h-4" /> },
     { id: "notes", label: "Personal Notes", icon: <Edit3 className="w-4 h-4" /> },
     { id: "related", label: "Related Topics", icon: <Link2 className="w-4 h-4" /> },
   ];

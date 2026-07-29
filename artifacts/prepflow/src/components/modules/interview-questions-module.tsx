@@ -20,14 +20,22 @@ export function InterviewQuestionsModule({ workspace }: { workspace: LearningWor
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [expandedId, setExpandedId] = useState<number | null>(0);
-  const [questions, setQuestions] = useState<InterviewQuestion[]>(workspace?.interviewQuestions || []);
+
+  const initialQuestions = (Array.isArray(workspace?.interviewQuestions) && workspace.interviewQuestions.length >= 50)
+    ? workspace.interviewQuestions
+    : getFallbackInterviewQuestions(workspace?.title || "Topic");
+
+  const [questions, setQuestions] = useState<InterviewQuestion[]>(initialQuestions);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   React.useEffect(() => {
-    setQuestions(workspace?.interviewQuestions || []);
+    const updated = (Array.isArray(workspace?.interviewQuestions) && workspace.interviewQuestions.length >= 50)
+      ? workspace.interviewQuestions
+      : getFallbackInterviewQuestions(workspace?.title || "Topic");
+    setQuestions(updated);
     setExpandedId(0);
-  }, [workspace?.interviewQuestions]);
+  }, [workspace?.interviewQuestions, workspace?.title]);
 
   const handleLoadMore = async () => {
     if (isLoadingMore || questions.length >= 50) return;
@@ -67,178 +75,176 @@ export function InterviewQuestionsModule({ workspace }: { workspace: LearningWor
     }
   };
 
-  const filteredQuestions = questions.filter((q, idx) => {
+  const filteredQuestions = questions.filter((q) => {
     if (!q) return false;
-    const qText = q.question || "";
-    const aText = q.answer || "";
+    const qText = (q.question || "").toLowerCase();
+    const aText = (q.answer || "").toLowerCase();
+    const catText = (q.category || "").toLowerCase();
 
     const matchesSearch =
-      qText.toLowerCase().includes(search.toLowerCase()) ||
-      aText.toLowerCase().includes(search.toLowerCase());
+      qText.includes(search.toLowerCase()) ||
+      aText.includes(search.toLowerCase());
 
     if (!matchesSearch) return false;
     if (categoryFilter === "all") return true;
 
-    if (idx === 0 && categoryFilter === "basic") return true;
+    if (categoryFilter === "basic") return catText.includes("basic");
+    if (categoryFilter === "intermediate") return catText.includes("intermed");
+    if (categoryFilter === "advanced") return catText.includes("advanc");
+    if (categoryFilter === "scenario") return catText.includes("scenario") || catText.includes("situation");
+    if (categoryFilter === "hr") return catText.includes("hr") || catText.includes("behavioural") || catText.includes("behavioral");
+    if (categoryFilter === "coding") return catText.includes("coding") || catText.includes("code");
 
-    return (q.category || "").toLowerCase() === categoryFilter;
+    return true;
   });
 
-  const difficultyColors = {
+  const difficultyColors: Record<string, string> = {
     easy: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
     medium: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
     hard: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
   };
 
-  const categories: { id: CategoryFilter; label: string }[] = [
-    { id: "all", label: "All Qs" },
-    { id: "basic", label: "Basic" },
-    { id: "intermediate", label: "Intermediate" },
-    { id: "advanced", label: "Advanced" },
-    { id: "scenario", label: "Scenario" },
-    { id: "hr", label: "HR" },
-    { id: "coding", label: "Coding" },
+  const categories: { id: CategoryFilter; label: string; count: number }[] = [
+    { id: "all", label: "All Qs", count: questions.length },
+    { id: "basic", label: "Basic", count: questions.filter(q => (q.category || "").toLowerCase().includes("basic")).length },
+    { id: "intermediate", label: "Intermediate", count: questions.filter(q => (q.category || "").toLowerCase().includes("intermed")).length },
+    { id: "advanced", label: "Advanced", count: questions.filter(q => (q.category || "").toLowerCase().includes("advanc")).length },
+    { id: "scenario", label: "Scenario", count: questions.filter(q => (q.category || "").toLowerCase().includes("scenario")).length },
+    { id: "hr", label: "HR", count: questions.filter(q => (q.category || "").toLowerCase().includes("hr") || (q.category || "").toLowerCase().includes("behavioural")).length },
+    { id: "coding", label: "Coding", count: questions.filter(q => (q.category || "").toLowerCase().includes("coding") || (q.category || "").toLowerCase().includes("code")).length },
   ];
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-display font-semibold flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-primary" />
-            Interview Preparation
+            Technical Interview Preparation ({questions.length} Questions)
           </h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {questions.length} questions loaded • Filter by difficulty or type
+            50 categorized interview questions with answers, explanations, and difficulty ratings
           </p>
         </div>
+      </div>
 
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
           <Input
-            placeholder="Search interview Qs..."
+            placeholder="Search questions or answers..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 text-sm"
+            className="pl-9 bg-card border-border/60"
           />
         </div>
       </div>
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-        {categories.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => setCategoryFilter(c.id)}
-            className={cn(
-              "px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all border",
-              categoryFilter === c.id
-                ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                : "bg-secondary/60 hover:bg-secondary border-border/50 text-muted-foreground hover:text-foreground"
-            )}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar">
+        {categories.map((cat) => (
+          <Button
+            key={cat.id}
+            variant={categoryFilter === cat.id ? "default" : "outline"}
+            size="sm"
+            onClick={() => setCategoryFilter(cat.id)}
+            className="rounded-full text-xs gap-1.5 shrink-0"
           >
-            {c.label}
-          </button>
+            <span>{cat.label}</span>
+            <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+              {cat.count}
+            </Badge>
+          </Button>
         ))}
       </div>
 
-      <div className="space-y-3">
-        {filteredQuestions.map((q, idx) => {
-          const isExpanded = expandedId === idx;
-          const diffKey = (q.difficulty ?? "medium") as keyof typeof difficultyColors;
-          const diffColor = difficultyColors[diffKey] || difficultyColors.medium;
+      <div className="space-y-4">
+        {filteredQuestions.length === 0 ? (
+          <Card className="p-12 text-center text-muted-foreground">
+            <p className="text-sm font-medium">No interview questions match your current search or category filter.</p>
+          </Card>
+        ) : (
+          filteredQuestions.map((q, index) => {
+            const isExpanded = expandedId === index;
+            const diffKey = (q.difficulty || "medium").toLowerCase();
+            const badgeStyle = difficultyColors[diffKey] || difficultyColors.medium;
 
-          return (
-            <Card
-              key={idx}
-              className={cn(
-                "border-border/60 transition-all overflow-hidden",
-                isExpanded ? "border-primary/40 shadow-md bg-card" : "bg-card/60 hover:bg-card"
-              )}
-            >
-              <CardContent className="p-0">
-                <button
-                  onClick={() => setExpandedId(isExpanded ? null : idx)}
-                  className="w-full p-4 md:p-5 flex items-start gap-4 text-left justify-between hover:no-underline"
-                >
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <span className="w-7 h-7 rounded-lg bg-primary/10 text-primary font-mono font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                      Q{idx + 1}
-                    </span>
-                    <div className="space-y-1 min-w-0">
-                      <h3 className="font-semibold text-base leading-snug text-foreground">
-                        {q.question || `Interview Question ${idx + 1}`}
+            return (
+              <motion.div
+                key={index}
+                initial={animationsEnabled ? { opacity: 0, y: 10 } : undefined}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(index * 0.02, 0.3) }}
+              >
+                <Card className="border-border/60 overflow-hidden hover:border-primary/40 transition-colors">
+                  <button
+                    onClick={() => setExpandedId(isExpanded ? null : index)}
+                    className="w-full text-left p-5 flex items-start justify-between gap-4 bg-card hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline" className={cn("text-xs font-semibold uppercase", badgeStyle)}>
+                          {q.difficulty || "Medium"}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {q.category || "General"}
+                        </Badge>
+                      </div>
+                      <h3 className="font-semibold text-base text-foreground leading-snug">
+                        {index + 1}. {q.question}
                       </h3>
-                      <div className="flex items-center gap-2 pt-1 flex-wrap">
-                        {q.difficulty && (
-                          <Badge variant="outline" className={cn("text-[11px] capitalize px-2 py-0 h-5", diffColor)}>
-                            {q.difficulty}
-                          </Badge>
-                        )}
-                        {q.category && (
-                          <Badge variant="secondary" className="text-[11px] capitalize px-2 py-0 h-5 font-normal">
-                            {q.category}
-                          </Badge>
-                        )}
-                      </div>
                     </div>
-                  </div>
+                    <ChevronDown
+                      className={cn(
+                        "w-5 h-5 text-muted-foreground shrink-0 transition-transform duration-200 mt-1",
+                        isExpanded && "rotate-180 text-primary"
+                      )}
+                    />
+                  </button>
 
-                  <ChevronDown
-                    className={cn(
-                      "w-5 h-5 text-muted-foreground shrink-0 transition-transform duration-200 mt-1",
-                      isExpanded && "rotate-180 text-primary"
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <CardContent className="p-5 pt-0 border-t border-border/40 bg-muted/20 space-y-4">
+                          <div className="pt-4 space-y-2">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-primary">Model Answer</h4>
+                            <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
+                              {q.answer}
+                            </p>
+                          </div>
+
+                          {q.explanation && (
+                            <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 space-y-1">
+                              <h4 className="text-xs font-bold text-primary flex items-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5" /> Conceptual Explanation & Key Takeaways
+                              </h4>
+                              <p className="text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                                {q.explanation}
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </motion.div>
                     )}
-                  />
-                </button>
-
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={animationsEnabled ? { height: 0, opacity: 0 } : undefined}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={animationsEnabled ? { height: 0, opacity: 0 } : undefined}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="px-5 pb-5 pt-1 border-t border-border/40 space-y-3 bg-muted/20">
-                        <div className="text-xs font-bold text-primary tracking-wider uppercase font-mono pt-2">
-                          Sample Answer &amp; Key Points
-                        </div>
-                        <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line bg-card p-4 rounded-xl border border-border/50">
-                          {q.answer || "Answer details..."}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </CardContent>
-            </Card>
-          );
-        })}
+                  </AnimatePresence>
+                </Card>
+              </motion.div>
+            );
+          })
+        )}
       </div>
-
-      {errorMsg && (
-        <p className="text-xs text-rose-500 font-medium text-center">{errorMsg}</p>
-      )}
 
       {questions.length < 50 && (
         <div className="text-center pt-4">
-          <Button
-            onClick={handleLoadMore}
-            disabled={isLoadingMore}
-            variant="outline"
-            size="lg"
-            className="rounded-full px-8 gap-2 border-primary/30 hover:bg-primary/5 hover:text-primary font-semibold"
-          >
-            {isLoadingMore ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Fetching 10 More Questions...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 text-primary" /> Load 10 More Interview Questions ({questions.length}/50)
-              </>
-            )}
+          <Button onClick={handleLoadMore} disabled={isLoadingMore} variant="outline" className="gap-2">
+            {isLoadingMore ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 text-primary" />}
+            Load More Questions ({50 - questions.length} remaining)
           </Button>
+          {errorMsg && <p className="text-xs text-rose-500 mt-2">{errorMsg}</p>}
         </div>
       )}
     </div>

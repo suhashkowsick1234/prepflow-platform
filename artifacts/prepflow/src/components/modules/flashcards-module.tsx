@@ -15,23 +15,31 @@ import {
   Layers,
 } from "lucide-react";
 import { useWorkspaceStore } from "@/lib/workspace-store";
+import { getFallbackFlashcards } from "@/lib/fallback-generators";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 export function FlashcardsModule({ workspace }: { workspace: LearningWorkspace }) {
   const { animationsEnabled, currentSessionId, toggleBookmark, isBookmarked } = useWorkspaceStore();
-  const [cards, setCards] = useState(workspace.flashcards ?? []);
+  const initialCards = (Array.isArray(workspace.flashcards) && workspace.flashcards.length >= 12)
+    ? workspace.flashcards
+    : getFallbackFlashcards(workspace.title || "Topic");
+
+  const [cards, setCards] = useState(initialCards);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [learned, setLearned] = useState<Set<number>>(new Set());
 
   // Reset when workspace changes
   useEffect(() => {
-    setCards(workspace.flashcards ?? []);
+    const updated = (Array.isArray(workspace.flashcards) && workspace.flashcards.length >= 12)
+      ? workspace.flashcards
+      : getFallbackFlashcards(workspace.title || "Topic");
+    setCards(updated);
     setCurrentIndex(0);
     setIsFlipped(false);
     setLearned(new Set());
-  }, [workspace.flashcards]);
+  }, [workspace.flashcards, workspace.title]);
 
   // Keyboard navigation — use refs to avoid stale closure
   const currentIndexRef = React.useRef(currentIndex);
