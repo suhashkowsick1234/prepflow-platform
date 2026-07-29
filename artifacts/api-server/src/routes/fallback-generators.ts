@@ -420,153 +420,396 @@ export function getFallbackCheatSheet(topic: string): any[] {
 
 export function getFallbackCodeExample(topic: string, approach: string = "optimalApproach"): any {
   const t = topic.trim();
-  const cleanName = t.replace(/[^a-zA-Z0-9]/g, "");
+  const lowerTopic = t.toLowerCase();
 
-  const javaCode = `import java.util.*;
+  const isTwoSum = lowerTopic.includes("two sum") || lowerTopic.includes("sum");
+  const problemTitle = isTwoSum ? "Two Sum Problem" : `${t} Algorithmic Solution`;
+  const problemStatement = isTwoSum
+    ? `Given an array of integers 'nums' and an integer 'target', return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice.`
+    : `Given an input dataset representing '${t}', find the target element/pair that satisfies the domain constraints while achieving minimum execution latency.`;
 
-/**
- * Production Java Implementation for ${t}
- */
-public class ${cleanName || "Solution"} {
-    public static List<String> solve(List<String> input) {
-        if (input == null || input.isEmpty()) {
-            return Collections.emptyList();
-        }
-        
-        List<String> result = new ArrayList<>();
-        for (String item : input) {
-            if (item != null && !item.trim().isEmpty()) {
-                result.add(item.trim());
-            }
-        }
-        return result;
-    }
+  // --- APPROACH 1: BRUTE FORCE (O(N²)) ---
+  const bruteForceCpp = `#include <bits/stdc++.h>
+using namespace std;
 
-    public static void main(String[] args) {
-        List<String> testInput = Arrays.asList("Alpha", "Beta", "Gamma");
-        List<String> output = solve(testInput);
-        System.out.println("Processed size: " + output.size());
-    }
-}`;
-
-  const cppCode = `#include <iostream>
-#include <vector>
-#include <string>
-
-/**
- * High-Performance C++ Implementation for ${t}
- */
-class ${cleanName || "Solution"} {
+// Brute Force Approach: O(N^2) Time, O(1) Space
+class Solution {
 public:
-    static std::vector<std::string> solve(const std::vector<std::string>& input) {
-        if (input.empty()) return {};
-        
-        std::vector<std::string> result;
-        result.reserve(input.size());
-        
-        for (const auto& item : input) {
-            if (!item.empty()) {
-                result.push_back(item);
+    vector<int> twoSum(vector<int>& nums, int target) {
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (nums[i] + nums[j] == target) {
+                    return {i, j}; // Pair found via nested scan
+                }
             }
         }
-        return result;
+        return {};
     }
 };
 
 int main() {
-    std::vector<std::string> testData = {"Alpha", "Beta", "Gamma"};
-    auto output = ${cleanName || "Solution"}::solve(testData);
-    std::cout << "Processed size: " << output.size() << std::endl;
+    Solution sol;
+    vector<int> nums = {2, 7, 11, 15};
+    int target = 9;
+    vector<int> ans = sol.twoSum(nums, target);
+    cout << "Brute Force Indices: [" << ans[0] << ", " << ans[1] << "]" << endl;
     return 0;
 }`;
 
-  const pythonCode = `"""
-Clean Python 3 Implementation for ${t}
-"""
-from typing import List, Optional
+  const bruteForceJava = `import java.util.*;
 
-def solve_${(cleanName || "solution").toLowerCase()}(data: Optional[List[str]]) -> List[str]:
-    if not data:
+// Brute Force Approach: O(N^2) Time, O(1) Space
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        int n = nums.length;
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (nums[i] + nums[j] == target) {
+                    return new int[]{i, j}; // Found target sum pair
+                }
+            }
+        }
+        return new int[]{};
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        int[] nums = {2, 7, 11, 15};
+        int[] ans = sol.twoSum(nums, 9);
+        System.out.println("Brute Force Result: " + Arrays.toString(ans));
+    }
+}`;
+
+  const bruteForcePython = `# Brute Force Approach: O(N^2) Time, O(1) Space
+class Solution:
+    def twoSum(self, nums: list[int], target: int) -> list[int]:
+        n = len(nums)
+        for i in range(n):
+            for j in range(i + 1, n):
+                if nums[i] + nums[j] == target:
+                    return [i, j] # Found target via double loop
         return []
-    
-    # Filter and sanitize items
-    return [item.strip() for item in data if item and isinstance(item, str)]
 
 if __name__ == "__main__":
-    sample_data = ["Alpha", "Beta", "Gamma"]
-    output = solve_${(cleanName || "solution").toLowerCase()}(sample_data)
-    print(f"Processed result count: {len(output)}")
+    sol = Solution()
+    print("Brute Force Output:", sol.twoSum([2, 7, 11, 15], 9))
 `;
 
-  const jsCode = `/**
- * Production JavaScript (ES6+) Implementation for ${t}
- */
-export function solve${cleanName || "Solution"}(inputData = []) {
-  if (!Array.isArray(inputData)) return [];
-  
-  return inputData
-    .filter(Boolean)
-    .map((item) => (typeof item === "string" ? item.trim() : item));
+  const bruteForceJs = `// Brute Force Approach: O(N^2) Time, O(1) Space
+function twoSum(nums, target) {
+  const n = nums.length;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (nums[i] + nums[j] === target) {
+        return [i, j]; // Pair found via exhaustive scan
+      }
+    }
+  }
+  return [];
 }
 
-// Dry Run Verification
-const testData = ["Alpha", "Beta", "Gamma"];
-const output = solve${cleanName || "Solution"}(testData);
-console.log("Processed result count:", output.length);
+console.log("Brute Force Output:", twoSum([2, 7, 11, 15], 9));
 `;
 
-  const multilangExamples = [
-    {
-      language: "JavaScript",
-      code: jsCode,
-      explanation: `Processes inputs using native functional array transformations (filter/map) with O(N) linear time execution.`
-    },
-    {
-      language: "Python",
-      code: pythonCode,
-      explanation: `Uses list comprehension and type hints to filter valid elements cleanly with low overhead.`
-    },
-    {
-      language: "Java",
-      code: javaCode,
-      explanation: `Object-oriented Java implementation with defensive null checks and Collections API wrappers.`
-    },
-    {
-      language: "C++",
-      code: cppCode,
-      explanation: `High-performance C++ implementation using vector reference passing and pre-allocated capacity.`
+  // --- APPROACH 2: BETTER APPROACH (O(N log N)) ---
+  const betterCpp = `#include <bits/stdc++.h>
+using namespace std;
+
+// Better Approach: Sorting + Two Pointers - O(N log N) Time, O(N) Space
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        int n = nums.size();
+        vector<pair<int, int>> pairs(n);
+        for (int i = 0; i < n; i++) {
+            pairs[i] = {nums[i], i}; // Store value and original index
+        }
+        
+        sort(pairs.begin(), pairs.end()); // Sort in O(N log N)
+        
+        int left = 0, right = n - 1;
+        while (left < right) {
+            int sum = pairs[left].first + pairs[right].first;
+            if (sum == target) {
+                return {pairs[left].second, pairs[right].second};
+            } else if (sum < target) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+        return {};
     }
-  ];
+};
+
+int main() {
+    Solution sol;
+    vector<int> nums = {2, 7, 11, 15};
+    vector<int> ans = sol.twoSum(nums, 9);
+    cout << "Better (Two-Pointer) Indices: [" << ans[0] << ", " << ans[1] << "]" << endl;
+    return 0;
+}`;
+
+  const betterJava = `import java.util.*;
+
+// Better Approach: Sorting + Two Pointers - O(N log N) Time, O(N) Space
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        int n = nums.length;
+        int[][] pairs = new int[n][2];
+        for (int i = 0; i < n; i++) {
+            pairs[i] = new int[]{nums[i], i};
+        }
+        
+        Arrays.sort(pairs, Comparator.comparingInt(a -> a[0])); // O(N log N)
+        
+        int left = 0, right = n - 1;
+        while (left < right) {
+            int sum = pairs[left][0] + pairs[right][0];
+            if (sum == target) {
+                return new int[]{pairs[left][1], pairs[right][1]};
+            } else if (sum < target) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+        return new int[]{};
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        int[] ans = sol.twoSum(new int[]{2, 7, 11, 15}, 9);
+        System.out.println("Better (Two-Pointer) Output: " + Arrays.toString(ans));
+    }
+}`;
+
+  const betterPython = `# Better Approach: Sorting + Two Pointers - O(N log N) Time, O(N) Space
+class Solution:
+    def twoSum(self, nums: list[int], target: int) -> list[int]:
+        # Pair values with original index and sort by value
+        pairs = sorted([(val, idx) for idx, val in enumerate(nums)])
+        left, right = 0, len(pairs) - 1
+        
+        while left < right:
+            curr_sum = pairs[left][0] + pairs[right][0]
+            if curr_sum == target:
+                return [pairs[left][1], pairs[right][1]]
+            elif curr_sum < target:
+                left += 1
+            else:
+                right -= 1
+        return []
+
+if __name__ == "__main__":
+    sol = Solution()
+    print("Better Output:", sol.twoSum([2, 7, 11, 15], 9))
+`;
+
+  const betterJs = `// Better Approach: Sorting + Two Pointers - O(N log N) Time, O(N) Space
+function twoSum(nums, target) {
+  const pairs = nums.map((val, idx) => ({ val, idx }));
+  pairs.sort((a, b) => a.val - b.val); // O(N log N)
+  
+  let left = 0, right = pairs.length - 1;
+  while (left < right) {
+    const sum = pairs[left].val + pairs[right].val;
+    if (sum === target) {
+      return [pairs[left].idx, pairs[right].idx];
+    } else if (sum < target) {
+      left++;
+    } else {
+      right--;
+    }
+  }
+  return [];
+}
+
+console.log("Better Output:", twoSum([2, 7, 11, 15], 9));
+`;
+
+  // --- APPROACH 3: OPTIMAL APPROACH (O(N)) ---
+  const optimalCpp = `#include <bits/stdc++.h>
+using namespace std;
+
+// Optimal Approach: Hash Map Single Pass - O(N) Time, O(N) Space
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        unordered_map<int, int> mp; // value -> index map
+        for (int i = 0; i < nums.size(); i++) {
+            int complement = target - nums[i];
+            if (mp.find(complement) != mp.end()) {
+                return {mp[complement], i}; // Found complement in O(1) avg
+            }
+            mp[nums[i]] = i;
+        }
+        return {};
+    }
+};
+
+int main() {
+    Solution sol;
+    vector<int> nums = {2, 7, 11, 15};
+    vector<int> ans = sol.twoSum(nums, 9);
+    cout << "Optimal (HashMap) Indices: [" << ans[0] << ", " << ans[1] << "]" << endl;
+    return 0;
+}`;
+
+  const optimalJava = `import java.util.*;
+
+// Optimal Approach: Hash Map Single Pass - O(N) Time, O(N) Space
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> map = new HashMap<>(); // value -> index
+        for (int i = 0; i < nums.length; i++) {
+            int complement = target - nums[i];
+            if (map.containsKey(complement)) {
+                return new int[]{map.get(complement), i};
+            }
+            map.put(nums[i], i);
+        }
+        return new int[]{};
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        int[] ans = sol.twoSum(new int[]{2, 7, 11, 15}, 9);
+        System.out.println("Optimal (HashMap) Output: " + Arrays.toString(ans));
+    }
+}`;
+
+  const optimalPython = `# Optimal Approach: Hash Map Single Pass - O(N) Time, O(N) Space
+class Solution:
+    def twoSum(self, nums: list[int], target: int) -> list[int]:
+        seen = {} # value -> index
+        for i, num in enumerate(nums):
+            complement = target - num
+            if complement in seen:
+                return [seen[complement], i]
+            seen[num] = i
+        return []
+
+if __name__ == "__main__":
+    sol = Solution()
+    print("Optimal Output:", sol.twoSum([2, 7, 11, 15], 9))
+`;
+
+  const optimalJs = `// Optimal Approach: Hash Map Single Pass - O(N) Time, O(N) Space
+function twoSum(nums, target) {
+  const map = new Map(); // value -> index
+  for (let i = 0; i < nums.length; i++) {
+    const complement = target - nums[i];
+    if (map.has(complement)) {
+      return [map.get(complement), i];
+    }
+    map.set(nums[i], i);
+  }
+  return [];
+}
+
+console.log("Optimal Output:", twoSum([2, 7, 11, 15], 9));
+`;
+
+  // Build approach specific objects
+  const bruteForceObj = {
+    title: `Brute Force Approach for ${t}`,
+    timeComplexity: "O(N²)",
+    timeExplanation: `The algorithm uses nested loops to compare every pair of elements. The outer loop runs N times and the inner loop runs on average N/2 times, resulting in N * (N - 1) / 2 total operations = O(N²).`,
+    spaceComplexity: "O(1)",
+    spaceExplanation: `No auxiliary data structures are used. Memory footprint is strictly constant regardless of input array size.`,
+    algorithmExplanation: [
+      `Uses a nested double loop to test every pair combination (i, j) where j > i.`,
+      `For each pair, checks if nums[i] + nums[j] equals the target value.`,
+      `Does not require pre-sorting or auxiliary memory structures.`,
+      `Simple and intuitive implementation with zero memory allocation overhead.`,
+      `Guaranteed to find the answer if it exists, but scales poorly for N > 10,000.`,
+      `Edge cases: Handles small arrays (size 2), negative numbers, and zero targets effortlessly.`,
+      `Primary Bottleneck: Quadratic O(N²) time complexity causes execution timeouts on large arrays.`
+    ],
+    dryRun: `Input: nums = [2, 7, 11, 15], target = 9\n\nIteration 1: i = 0 (val = 2)\n  - j = 1 (val = 7): 2 + 7 = 9 (Target Match!)\n  - Return indices [0, 1] immediately.`,
+    interviewTips: [
+      `Always start technical interviews by explaining the Brute Force approach first to establish a working baseline.`,
+      `Mention the O(N²) time complexity and highlight that memory is O(1).`,
+      `Explicitly state why nested loops are inefficient for large inputs before proposing optimizations.`
+    ],
+    examples: [
+      { language: "C++", code: bruteForceCpp, explanation: "C++ double-loop pair scanning without external memory allocation." },
+      { language: "Java", code: bruteForceJava, explanation: "Java nested for-loops iterating over array indices." },
+      { language: "Python", code: bruteForcePython, explanation: "Python 3 nested loop using range() indexing." },
+      { language: "JavaScript", code: bruteForceJs, explanation: "ES6 double loop scanning array index pairs." }
+    ]
+  };
+
+  const betterObj = {
+    title: `Better Approach (Sorting + Two Pointers) for ${t}`,
+    timeComplexity: "O(N log N)",
+    timeExplanation: `Sorting the array of (value, original_index) pairs dominates runtime complexity at O(N log N). The subsequent two-pointer linear scan takes O(N) time, giving an overall time complexity of O(N log N).`,
+    spaceComplexity: "O(N)",
+    spaceExplanation: `Auxiliary array of size N is created to store value-index pairs so original indices are preserved after sorting.`,
+    algorithmExplanation: [
+      `Pairs each value with its original index to preserve output positions after sorting.`,
+      `Sorts the pairs array in ascending order based on element values (O(N log N)).`,
+      `Initializes two pointers: left = 0 and right = N - 1.`,
+      `Calculates sum = nums[left] + nums[right].`,
+      `If sum == target: Returns original indices [left.index, right.index].`,
+      `If sum < target: Increments left pointer to increase sum.`,
+      `If sum > target: Decrements right pointer to decrease sum.`,
+      `Eliminates quadratic time without requiring hash map overhead.`
+    ],
+    dryRun: `Input: nums = [2, 7, 11, 15], target = 9\n\n1. Store index pairs: [(2,0), (7,1), (11,2), (15,3)]\n2. Sorted pairs: [(2,0), (7,1), (11,2), (15,3)]\n3. Two Pointers:\n   - Left = 0 (val 2), Right = 3 (val 15): Sum = 17 > 9 -> Decrement Right\n   - Left = 0 (val 2), Right = 2 (val 11): Sum = 13 > 9 -> Decrement Right\n   - Left = 0 (val 2), Right = 1 (val 7) : Sum = 9 == 9 -> Found! Return original indices [0, 1].`,
+    interviewTips: [
+      `Explain why pre-sorting destroys original indices and how wrapping values with their original index solves this issue.`,
+      `Mention how two pointers shrink the search space monotonically.`,
+      `Compare O(N log N) time against O(N²) brute force to demonstrate algorithmic progression.`
+    ],
+    examples: [
+      { language: "C++", code: betterCpp, explanation: "C++ std::sort on pair<int, int> with two pointers." },
+      { language: "Java", code: betterJava, explanation: "Java Arrays.sort with Comparator over index-mapped 2D array." },
+      { language: "Python", code: betterPython, explanation: "Python sorted() over (val, index) tuples with two-pointer while loop." },
+      { language: "JavaScript", code: betterJs, explanation: "ES6 Array.prototype.sort with custom comparator and two pointers." }
+    ]
+  };
+
+  const optimalObj = {
+    title: `Optimal Approach (Hash Map Single Pass) for ${t}`,
+    timeComplexity: "O(N)",
+    timeExplanation: `The array is traversed exactly once (N elements). For each element, looking up the complement (target - num) in the Hash Map takes O(1) average time. Total time complexity is O(N).`,
+    spaceComplexity: "O(N)",
+    spaceExplanation: `In the worst case, the Hash Map stores up to N - 1 elements before finding the target pair, taking O(N) auxiliary space.`,
+    algorithmExplanation: [
+      `Iterates through the array sequentially while maintaining a Hash Map of (value -> index).`,
+      `For element nums[i], calculates complement = target - nums[i].`,
+      `Checks if complement already exists in the Hash Map in O(1) average time.`,
+      `If complement exists: Returns [map.get(complement), i] immediately.`,
+      `If complement does not exist: Inserts map.set(nums[i], i) and proceeds to next element.`,
+      `Solves the problem in a single pass without pre-sorting.`,
+      `Handles negative numbers, duplicate values, and zero targets automatically.`,
+      `Achieves theoretical minimum time complexity for unsorted input datasets.`
+    ],
+    dryRun: `Input: nums = [2, 7, 11, 15], target = 9\n\nHashMap state before start: {}\n\nIteration 1: i = 0, num = 2\n  - Complement = 9 - 2 = 7\n  - 7 in HashMap? No.\n  - Action: Insert HashMap { 2: 0 }\n\nIteration 2: i = 1, num = 7\n  - Complement = 9 - 7 = 2\n  - 2 in HashMap? YES! (index 0)\n  - Target Pair Found! Return indices [0, 1].`,
+    interviewTips: [
+      `Highlight that single-pass hash mapping is optimal because it achieves linear O(N) time complexity.`,
+      `Discuss trade-offs: We trade O(N) space memory to speed up time from O(N²) to O(N).`,
+      `Mention how hash collision resilience (unordered_map in C++, HashMap in Java, dict in Python) guarantees O(1) average lookups.`
+    ],
+    examples: [
+      { language: "C++", code: optimalCpp, explanation: "C++ std::unordered_map single-pass hash lookup." },
+      { language: "Java", code: optimalJava, explanation: "Java HashMap single-pass complement key search." },
+      { language: "Python", code: optimalPython, explanation: "Python dict enumeration single-pass check." },
+      { language: "JavaScript", code: optimalJs, explanation: "ES6 Map single-pass set/has lookups." }
+    ]
+  };
 
   const codeExampleObj = {
     isProgramming: true,
-    problemStatement: `Design and implement an efficient, production-grade algorithm for ${t}.`,
-    description: `A comprehensive multi-language implementation of ${t} showcasing optimal space-time tradeoffs and clean code practices.`,
-    optimalApproach: {
-      title: `Optimal Approach for ${t}`,
-      timeComplexity: "O(N)",
-      spaceComplexity: "O(1) auxiliary",
-      explanation: `Linear time O(N) pass utilizing constant auxiliary space O(1). Ensures minimal garbage collection pressure.`,
-      dryRun: `1. Input array initialized with test values.\n2. Iterative loop processes elements sequentially.\n3. Non-empty items are validated and stored in result buffer.\n4. Output returned with verified output size.`,
-      examples: multilangExamples
-    },
-    betterApproach: {
-      title: `Better Approach for ${t}`,
-      timeComplexity: "O(N log N)",
-      spaceComplexity: "O(N)",
-      explanation: `Sort-based approach sorting elements prior to execution.`,
-      dryRun: `1. Input sorted in O(N log N) time.\n2. Sorted elements processed sequentially.\n3. Returned sorted data set.`,
-      examples: multilangExamples
-    },
-    bruteForce: {
-      title: `Brute Force Approach for ${t}`,
-      timeComplexity: "O(N²)",
-      spaceComplexity: "O(N)",
-      explanation: `Nested loop iteration evaluating all pair combinations.`,
-      dryRun: `1. Outer loop picks target element.\n2. Inner loop compares against all other elements.\n3. Results accumulated.`,
-      examples: multilangExamples
-    },
-    examples: multilangExamples
+    problemStatement: `Problem Statement:\n${problemStatement}\n\nInput Constraints:\n- Array size: 2 <= N <= 10^5\n- Element values: -10^9 <= nums[i] <= 10^9\n- Target value: -10^9 <= target <= 10^9\n- Exactly one valid solution exists.`,
+    description: `A production-grade multi-language breakdown of ${problemTitle} comparing Brute Force O(N²), Better O(N log N), and Optimal O(N) approaches.`,
+    optimalApproach: optimalObj,
+    betterApproach: betterObj,
+    bruteForce: bruteForceObj,
+    examples: optimalObj.examples
   };
 
   return {

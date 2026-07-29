@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Code2, Copy, Check, FileText, Loader2, Sparkles, Clock, HardDrive, AlertTriangle } from "lucide-react";
+import { Code2, Copy, Check, FileText, Loader2, Sparkles, Clock, HardDrive, AlertTriangle, Lightbulb, ListChecks, ArrowRight } from "lucide-react";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { setCachedModule } from "@/lib/module-cache";
 import { safeFetchJson } from "@/lib/safe-fetch";
@@ -14,49 +14,73 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 type ApproachKey = "optimalApproach" | "betterApproach" | "bruteForce";
-
-const LANGUAGES = ["JavaScript", "Python", "Java", "C++"] as const;
+const LANGUAGES = ["C++", "Java", "Python", "JavaScript"] as const;
 type Language = typeof LANGUAGES[number];
 
 const LANG_CLASS: Record<Language, string> = {
-  JavaScript: "language-javascript",
-  Python: "language-python",
-  Java: "language-java",
   "C++": "language-cpp",
+  Java: "language-java",
+  Python: "language-python",
+  JavaScript: "language-javascript",
 };
 
-function resolveApproachData(codeData: any, approach: ApproachKey) {
-  if (!codeData || typeof codeData !== "object") return null;
+function CodeViewerWithLineNumbers({
+  code,
+  language,
+  onCopy,
+  copied,
+}: {
+  code: string;
+  language: Language;
+  onCopy: () => void;
+  copied: boolean;
+}) {
+  const lines = code.trim().split("\n");
 
-  if (codeData[approach] && typeof codeData[approach] === "object") {
-    return codeData[approach];
-  }
-
-  if (
-    approach === "optimalApproach" &&
-    Array.isArray(codeData.examples) &&
-    codeData.examples.length > 0
-  ) {
-    return {
-      explanation: codeData.description ?? "Implementation and analysis.",
-      timeComplexity: "O(N)",
-      spaceComplexity: "O(1)",
-      examples: codeData.examples,
-    };
-  }
-
-  return null;
-}
-
-function findExample(examples: any[], lang: Language): any | null {
-  if (!Array.isArray(examples)) return null;
   return (
-    examples.find((e) => {
-      if (!e || typeof e !== "object") return false;
-      const langStr = e.language;
-      if (!langStr || typeof langStr !== "string") return false;
-      return langStr.toLowerCase() === lang.toLowerCase();
-    }) ?? null
+    <div className="relative group border border-border/60 rounded-xl overflow-hidden shadow-lg bg-[#1e1e1e]">
+      {/* Top Header Bar */}
+      <div className="bg-[#181818] px-4 py-2.5 border-b border-[#2d2d2d] flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-rose-500/80" />
+            <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+            <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+          </div>
+          <span className="text-xs font-mono font-medium text-muted-foreground ml-2">
+            solution.{language === "C++" ? "cpp" : language === "Java" ? "java" : language === "Python" ? "py" : "js"}
+          </span>
+        </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onCopy}
+          className="h-7 text-xs gap-1.5 bg-[#2d2d2d] hover:bg-[#3d3d3d] text-foreground border border-[#404040]"
+        >
+          {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? "Copied Code" : "Copy Code"}
+        </Button>
+      </div>
+
+      {/* Code Area with Line Numbers */}
+      <div className="flex font-mono text-sm leading-relaxed overflow-x-auto">
+        {/* Line Numbers Gutter */}
+        <div className="py-4 px-3 bg-[#161616] border-r border-[#2d2d2d] select-none text-right text-xs text-[#5c6370] font-mono flex flex-col shrink-0 min-w-[44px]">
+          {lines.map((_, i) => (
+            <span key={i} className="h-6 leading-6">
+              {i + 1}
+            </span>
+          ))}
+        </div>
+
+        {/* Highlighted Code Output */}
+        <div className="py-4 px-4 overflow-x-auto flex-1 text-[#abb2bf] bg-[#1e1e1e]">
+          <pre className="!m-0 !p-0 !bg-transparent font-mono text-sm leading-6">
+            <code className={LANG_CLASS[language]}>{code.trim()}</code>
+          </pre>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -64,23 +88,32 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
   const { animationsEnabled, currentSessionId, updateSessionWorkspace } = useWorkspaceStore();
   const [copiedLanguage, setCopiedLanguage] = useState<string | null>(null);
   const [selectedApproach, setSelectedApproach] = useState<ApproachKey>("optimalApproach");
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>("JavaScript");
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>("C++");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
 
+  // Fallback generator ensures distinct implementations for each approach
   const fallbackCodeObj = getFallbackCodeExample(workspace?.title || "Topic", selectedApproach);
   const codeData: any = (workspace?.codeExample && typeof workspace.codeExample === "object" && Object.keys(workspace.codeExample).length > 1)
     ? workspace.codeExample
     : fallbackCodeObj.codeExample || fallbackCodeObj;
 
+  // Inject custom Prism styles for colored comments (#6A9955), keywords (#569CD6), strings (#CE9178), etc.
   useEffect(() => {
-    if (!document.getElementById("prism-css")) {
-      const link = document.createElement("link");
-      link.id = "prism-css";
-      link.rel = "stylesheet";
-      link.href = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css";
-      document.head.appendChild(link);
+    if (!document.getElementById("prism-css-theme")) {
+      const style = document.createElement("style");
+      style.id = "prism-css-theme";
+      style.innerHTML = `
+        .token.comment, .token.block-comment, .token.prolog, .token.doctype, .token.cdata { color: #6A9955 !important; font-style: italic; }
+        .token.keyword, .token.property, .token.tag, .token.boolean, .token.number, .token.constant, .token.symbol, .token.deleted { color: #569CD6 !important; font-weight: 600; }
+        .token.string, .token.char, .token.builtin, .token.inserted { color: #CE9178 !important; }
+        .token.operator, .token.entity, .token.url, .language-css .token.string, .style .token.string { color: #D4D4D4 !important; }
+        .token.function, .token.class-name { color: #DCDCAA !important; }
+        .token.variable { color: #9CDCFE !important; }
+      `;
+      document.head.appendChild(style);
     }
+
     if (!document.getElementById("prism-js")) {
       const script = document.createElement("script");
       script.id = "prism-js";
@@ -96,6 +129,7 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
     }
   }, []);
 
+  // Trigger syntax highlighting on tab or approach change
   useEffect(() => {
     const timer = setTimeout(() => {
       try {
@@ -105,11 +139,11 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
       } catch {
         // non-fatal
       }
-    }, 150);
+    }, 100);
     return () => clearTimeout(timer);
   }, [selectedApproach, selectedLanguage, isGenerating]);
 
-  const handleCopy = (code: string, lang: string) => {
+  const handleCopyCode = (code: string, lang: string) => {
     try {
       navigator.clipboard.writeText(code);
     } catch {
@@ -124,66 +158,41 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
     setTimeout(() => setCopiedLanguage(null), 2000);
   };
 
-  const approachData = resolveApproachData(codeData, selectedApproach);
-
-  const handleGenerateApproach = async () => {
-    if (isGenerating) return;
-    setIsGenerating(true);
-    setGenerateError(null);
-
-    try {
-      const url = getApiUrl("/api/code");
-      const result = await safeFetchJson(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic: workspace?.title ?? "",
-          approach: selectedApproach,
-        }),
-      });
-
-      const fallbackObj = getFallbackCodeExample(workspace?.title ?? "Topic", selectedApproach);
-      const returnedExample = (result.ok && result.data?.codeExample)
-        ? result.data.codeExample
-        : fallbackObj.codeExample || fallbackObj;
-
-      if (returnedExample && typeof returnedExample === "object") {
-        const updatedCodeExample = {
-          ...codeData,
-          isProgramming: true,
-          problemStatement: returnedExample.problemStatement ?? codeData.problemStatement,
-          description: returnedExample.description ?? codeData.description,
-          [selectedApproach]: returnedExample[selectedApproach] ?? returnedExample.optimalApproach ?? returnedExample,
-        };
-
-        if (currentSessionId) {
-          updateSessionWorkspace(currentSessionId, { codeExample: updatedCodeExample });
-        }
-
-        if (workspace?.title) {
-          await setCachedModule(workspace.title, "code", { codeExample: updatedCodeExample });
-        }
-      }
-    } catch (e: any) {
-      console.error("Failed to generate approach code:", e);
-      setGenerateError("Network timeout. Retrying...");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  // Get current approach object (Optimal, Better, or Brute Force)
+  const currentApproachData = codeData[selectedApproach] || fallbackCodeObj[selectedApproach] || fallbackCodeObj.optimalApproach;
 
   const approachOptions = [
-    { id: "optimalApproach" as const, label: "Optimal Approach", badge: "Best" },
-    { id: "betterApproach" as const, label: "Better Approach", badge: "Optimized" },
-    { id: "bruteForce" as const, label: "Brute Force", badge: "Naive" },
+    { id: "optimalApproach" as const, label: "Optimal Approach", badge: "O(N)", color: "border-emerald-500/40 text-emerald-500" },
+    { id: "betterApproach" as const, label: "Better Approach", badge: "O(N log N)", color: "border-amber-500/40 text-amber-500" },
+    { id: "bruteForce" as const, label: "Brute Force", badge: "O(N²)", color: "border-rose-500/40 text-rose-500" },
   ];
 
-  const approachLabel =
-    selectedApproach === "bruteForce"
-      ? "Brute Force"
-      : selectedApproach === "betterApproach"
-      ? "Better"
-      : "Optimal";
+  // Extract language specific code for selected language
+  const examplesList = Array.isArray(currentApproachData?.examples) ? currentApproachData.examples : [];
+  const currentExample = examplesList.find((e: any) => (e?.language || "").toLowerCase() === selectedLanguage.toLowerCase()) || {
+    language: selectedLanguage,
+    code: `// Implementation for ${selectedLanguage}\n// See algorithm explanation below.`,
+    explanation: currentApproachData?.explanation ?? "Algorithmic implementation."
+  };
+
+  const algorithmPoints: string[] = Array.isArray(currentApproachData?.algorithmExplanation)
+    ? currentApproachData.algorithmExplanation
+    : [
+        `Validates input boundary conditions before processing elements.`,
+        `Uses domain-specific data structures to maintain state and optimize lookups.`,
+        `Monotonically reduces the remaining search space during execution.`,
+        `Handles zero, negative values, and duplicate elements seamlessly.`,
+        `Ensures clean separation between input reading and output formatting.`,
+        `Prevents unexpected runtime exceptions via defensive programming.`
+      ];
+
+  const interviewTips: string[] = Array.isArray(currentApproachData?.interviewTips)
+    ? currentApproachData.interviewTips
+    : [
+        `State the brute-force baseline first before diving into optimal code.`,
+        `Walk through space-time trade-offs out loud with the interviewer.`,
+        `Mention potential edge cases (null inputs, duplicate values, extreme bounds).`
+      ];
 
   return (
     <motion.div
@@ -193,47 +202,45 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Code2 className="w-5 h-5 text-primary" />
-          <h2 className="text-xl font-display font-semibold">Coding Implementation &amp; Analysis</h2>
+          <Code2 className="w-6 h-6 text-primary" />
+          <h2 className="text-xl font-display font-semibold">Competitive Coding &amp; Technical Analysis</h2>
         </div>
       </div>
 
-      {codeData.description && (
-        <p className="text-muted-foreground leading-relaxed">{codeData.description}</p>
-      )}
-
+      {/* Problem Statement Card */}
       {codeData.problemStatement && (
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className="border-primary/20 bg-primary/5 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-bold text-primary flex items-center gap-2">
-              <FileText className="w-4 h-4 text-primary" /> Problem Statement
+              <FileText className="w-4 h-4 text-primary" /> Problem Statement &amp; Constraints
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-foreground/90 leading-relaxed text-sm">{codeData.problemStatement}</p>
+            <p className="text-foreground/90 leading-relaxed text-sm whitespace-pre-wrap font-sans">{codeData.problemStatement}</p>
           </CardContent>
         </Card>
       )}
 
+      {/* Approach Tabs Selector */}
       <div className="flex items-center gap-2 border-b border-border/50 pb-3 overflow-x-auto no-scrollbar">
         {approachOptions.map((opt) => (
           <button
             key={opt.id}
             onClick={() => setSelectedApproach(opt.id)}
             className={cn(
-              "px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border flex items-center gap-2",
+              "px-4 py-2.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border flex items-center gap-2",
               selectedApproach === opt.id
                 ? "bg-primary text-primary-foreground border-primary shadow-sm"
                 : "bg-secondary/60 hover:bg-secondary border-border/50 text-muted-foreground hover:text-foreground"
             )}
           >
-            {opt.label}
+            <span>{opt.label}</span>
             <Badge
               variant="outline"
               className={cn(
-                "text-[10px] px-1.5 py-0 h-4 uppercase font-bold",
+                "text-[10px] px-1.5 py-0 h-4 font-mono font-bold uppercase",
                 selectedApproach === opt.id
-                  ? "bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20"
+                  ? "bg-primary-foreground/15 text-primary-foreground border-primary-foreground/30"
                   : "bg-muted text-muted-foreground border-border/50"
               )}
             >
@@ -243,130 +250,131 @@ export function CodeExamplesModule({ workspace }: { workspace: LearningWorkspace
         ))}
       </div>
 
-      {isGenerating ? (
-        <Card className="p-12 text-center border-border/50 flex flex-col items-center justify-center space-y-4">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          <p className="text-sm text-muted-foreground">
-            Generating {approachLabel} approach implementations...
-          </p>
-        </Card>
-      ) : approachData ? (
-        <div className="space-y-6">
-          <Card className="border-border/60">
-            <CardContent className="p-5 space-y-4">
-              <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <Clock className="w-4 h-4 text-primary" />
-                  Time Complexity:{" "}
-                  <strong className="text-foreground">{approachData.timeComplexity ?? "O(N)"}</strong>
-                </span>
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <HardDrive className="w-4 h-4 text-primary" />
-                  Space Complexity:{" "}
-                  <strong className="text-foreground">{approachData.spaceComplexity ?? "O(1)"}</strong>
-                </span>
-              </div>
-              {approachData.explanation && (
-                <p className="text-sm text-foreground/90 leading-relaxed">{approachData.explanation}</p>
-              )}
-              {approachData.dryRun && (
-                <div className="p-4 rounded-lg bg-secondary/50 border border-border/50 text-xs font-mono space-y-1">
-                  <span className="font-bold text-primary font-sans flex items-center gap-1.5 mb-1">
-                    <Sparkles className="w-3.5 h-3.5" /> Dry Run Walkthrough:
-                  </span>
-                  <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">{approachData.dryRun}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+      {/* Algorithm Explanation Section */}
+      <Card className="border-border/60">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+            <ListChecks className="w-5 h-5 text-primary" /> Algorithm Explanation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs text-foreground/90">
+            {algorithmPoints.map((pt, i) => (
+              <li key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary/30 border border-border/40">
+                <ArrowRight className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+                <span className="leading-relaxed font-sans">{pt}</span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
 
-          <Card className="border-border/60 overflow-hidden shadow-md">
-            <Tabs
-              value={selectedLanguage}
-              onValueChange={(v) => setSelectedLanguage(v as Language)}
-              className="w-full"
-            >
-              <div className="bg-muted px-4 py-2 border-b border-border/60 flex justify-between items-center">
-                <TabsList className="bg-transparent h-auto p-0 gap-1">
-                  {LANGUAGES.map((lang) => (
-                    <TabsTrigger
-                      key={lang}
-                      value={lang}
-                      className="data-[state=active]:bg-card rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2 text-xs font-semibold"
-                    >
-                      {lang}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </div>
-
-              {LANGUAGES.map((lang) => {
-                const ex = findExample(approachData?.examples, lang);
-                return (
-                  <TabsContent key={lang} value={lang} className="m-0 border-none outline-none">
-                    <div className="relative group">
-                      {ex && ex.code ? (
-                        <>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => handleCopy(ex.code, lang)}
-                            className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10 h-8 gap-1.5 text-xs"
-                          >
-                            {copiedLanguage === lang ? (
-                              <Check className="w-3.5 h-3.5 text-emerald-500" />
-                            ) : (
-                              <Copy className="w-3.5 h-3.5" />
-                            )}
-                            {copiedLanguage === lang ? "Copied!" : "Copy Code"}
-                          </Button>
-                          <div className="bg-[#1d1f21] p-4 m-0 overflow-x-auto text-sm font-mono leading-relaxed">
-                            <pre className="!m-0 !bg-transparent">
-                              <code className={LANG_CLASS[lang]}>{ex.code}</code>
-                            </pre>
-                          </div>
-                          {ex.explanation && (
-                            <div className="bg-muted/30 p-4 border-t border-border/50 text-xs text-foreground/80 leading-relaxed font-sans">
-                              <span className="font-semibold text-primary">Explanation: </span>
-                              {ex.explanation}
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="p-8 text-center text-sm text-muted-foreground">
-                          No {lang} implementation available for this approach.
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
-                );
-              })}
-            </Tabs>
-          </Card>
-        </div>
-      ) : (
-        <Card className="p-12 text-center border-border/50 flex flex-col items-center justify-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <Sparkles className="w-6 h-6" />
-          </div>
-          <div>
-            <h4 className="font-semibold text-base">Generate Coding Approach</h4>
-            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
-              The {approachLabel} approach code has not been generated yet. Click below to load it on demand.
+      {/* Complexity Breakdown Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="border-emerald-500/20 bg-emerald-500/5">
+          <CardHeader className="pb-1">
+            <CardTitle className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4" /> Time Complexity
+              </span>
+              <Badge variant="outline" className="font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+                {currentApproachData?.timeComplexity || "O(N)"}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <p className="text-xs text-foreground/80 leading-relaxed font-sans">
+              {currentApproachData?.timeExplanation || "Time complexity analysis based on execution iteration count."}
             </p>
-          </div>
-          {generateError && (
-            <div className="flex items-center gap-2 text-sm text-rose-500 bg-rose-500/10 px-4 py-2 rounded-lg border border-rose-500/20">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              {generateError}
-            </div>
-          )}
-          <Button onClick={handleGenerateApproach} disabled={isGenerating} className="gap-2">
-            <Sparkles className="w-4 h-4" />
-            Generate Code &amp; Explanations
-          </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-blue-500/20 bg-blue-500/5">
+          <CardHeader className="pb-1">
+            <CardTitle className="text-sm font-bold text-blue-600 dark:text-blue-400 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <HardDrive className="w-4 h-4" /> Space Complexity
+              </span>
+              <Badge variant="outline" className="font-mono bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30">
+                {currentApproachData?.spaceComplexity || "O(1)"}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <p className="text-xs text-foreground/80 leading-relaxed font-sans">
+              {currentApproachData?.spaceExplanation || "Space complexity analysis based on auxiliary memory allocation."}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Dry Run Execution Section */}
+      {currentApproachData?.dryRun && (
+        <Card className="border-amber-500/20 bg-amber-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-bold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" /> Dry Run Walkthrough
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap leading-relaxed bg-card/60 p-4 rounded-lg border border-amber-500/20">
+              {currentApproachData.dryRun}
+            </pre>
+          </CardContent>
         </Card>
       )}
+
+      {/* Code Editor Container */}
+      <div className="space-y-3">
+        <Tabs value={selectedLanguage} onValueChange={(v) => setSelectedLanguage(v as Language)} className="w-full">
+          <div className="flex items-center justify-between bg-muted/60 px-4 py-2 rounded-t-xl border border-border/60 border-b-0">
+            <TabsList className="bg-transparent h-auto p-0 gap-1">
+              {LANGUAGES.map((lang) => (
+                <TabsTrigger
+                  key={lang}
+                  value={lang}
+                  className="data-[state=active]:bg-card rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary px-4 py-2 text-xs font-semibold"
+                >
+                  {lang}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
+          {LANGUAGES.map((lang) => {
+            const ex = examplesList.find((e: any) => (e?.language || "").toLowerCase() === lang.toLowerCase()) || currentExample;
+            return (
+              <TabsContent key={lang} value={lang} className="m-0 border-none outline-none">
+                <CodeViewerWithLineNumbers
+                  code={ex?.code || `// Code for ${lang}`}
+                  language={lang}
+                  onCopy={() => handleCopyCode(ex?.code || "", lang)}
+                  copied={copiedLanguage === lang}
+                />
+              </TabsContent>
+            );
+          })}
+        </Tabs>
+      </div>
+
+      {/* Interview Tips Card */}
+      <Card className="border-indigo-500/20 bg-indigo-500/5">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+            <Lightbulb className="w-4 h-4" /> Interview Tips
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2 text-xs text-foreground/90 font-sans">
+            {interviewTips.map((tip, idx) => (
+              <li key={idx} className="flex items-start gap-2">
+                <span className="text-indigo-500 font-bold">•</span>
+                <span className="leading-relaxed">{tip}</span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }
