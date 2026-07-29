@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "wouter";
-import { Brain, Moon, Sun, Download, Trash2, User, LogOut, BookOpen, Sparkles } from "lucide-react";
+import { Moon, Sun, Download, Trash2, User, LogOut } from "lucide-react";
 import { useTheme } from "@/lib/theme-provider";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { useAuth } from "@/lib/auth-context";
@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LoginModal } from "@/components/auth/login-modal";
+import { AppLogo } from "@/components/ui/app-logo";
 import { LearningWorkspace } from "@workspace/api-client-react";
 
 interface LayoutProps {
@@ -66,12 +67,7 @@ export function Layout({ children, showWorkspaceActions, workspace }: LayoutProp
       <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto max-w-7xl h-16 flex items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-90">
-            <div className="bg-primary text-primary-foreground p-2 rounded-xl shadow-md shadow-primary/20">
-              <Brain className="w-5 h-5" />
-            </div>
-            <span className="font-display font-bold text-xl tracking-tight text-foreground">
-              PrepFlow <span className="text-primary">AI</span>
-            </span>
+            <AppLogo size={42} showText />
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -102,73 +98,59 @@ export function Layout({ children, showWorkspaceActions, workspace }: LayoutProp
               </div>
             )}
 
-            {/* Theme Toggle */}
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full w-9 h-9 border border-border/50"
+              className="h-9 w-9 rounded-xl"
+              aria-label="Toggle theme"
             >
-              {theme === "dark" ? (
-                <Sun className="w-4 h-4 text-amber-500" />
-              ) : (
-                <Moon className="w-4 h-4 text-indigo-500" />
-              )}
-              <span className="sr-only">Toggle theme</span>
+              {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
             </Button>
 
-            {/* Auth Button / Avatar Dropdown */}
             {isLoggedIn ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0 border border-primary/30">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={user?.avatar} alt={user?.name} />
-                      <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xs">
-                        {user?.name ? user.name[0] : "U"}
+                  <Button variant="ghost" className="relative h-9 w-9 rounded-full p-0">
+                    <Avatar className="h-9 w-9 border border-border">
+                      <AvatarImage src={user?.avatar} alt={user?.name ?? "User"} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
+                        {user?.name ? user.name.slice(0, 2).toUpperCase() : "U"}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 align-end" align="end">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-semibold leading-none">{user?.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground truncate">{user?.email ?? user?.phone}</p>
+                      <p className="text-sm font-medium leading-none">{user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user?.email ?? user?.phone}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setLocation("/profile")} className="cursor-pointer">
-                    <User className="mr-2 h-4 h-4" />
-                    <span>Profile & Stats</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setLocation("/profile")} className="cursor-pointer">
-                    <BookOpen className="mr-2 h-4 h-4" />
-                    <span>Saved Sessions</span>
+                    <User className="w-4 h-4 mr-2 text-primary" /> Profile & Stats
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout} className="cursor-pointer text-rose-500 focus:text-rose-500">
-                    <LogOut className="mr-2 h-4 h-4" />
-                    <span>Log Out</span>
+                    <LogOut className="w-4 h-4 mr-2" /> Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button
-                onClick={openLoginModal}
-                size="sm"
-                className="rounded-full font-bold px-4 gap-1.5 text-xs shadow-md shadow-primary/20"
-              >
-                <Sparkles className="w-3.5 h-3.5" /> Sign In
+              <Button onClick={openLoginModal} size="sm" className="rounded-xl px-4 text-xs font-semibold">
+                Sign In
               </Button>
             )}
           </div>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col w-full h-full">{children}</main>
+      <main className="flex-1 flex flex-col">{children}</main>
 
       <LoginModal />
     </div>
   );
 }
+
+export default Layout;

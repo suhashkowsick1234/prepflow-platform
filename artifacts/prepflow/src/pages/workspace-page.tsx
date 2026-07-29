@@ -12,6 +12,7 @@ import { ModuleError } from "@/components/ui/module-error";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { AppLogo } from "@/components/ui/app-logo";
 import {
   LayoutDashboard,
   FileText,
@@ -291,6 +292,9 @@ export function WorkspacePage() {
           )}
         >
           <div className="p-4 overflow-y-auto flex-1 no-scrollbar space-y-1">
+            <div className="px-3 pb-3 pt-1 border-b border-border/40 mb-3 flex items-center">
+              <AppLogo size={36} showText />
+            </div>
             <div className="px-3 pb-2 text-[10px] font-bold tracking-wider text-muted-foreground uppercase font-mono">
               Learning Modules
             </div>

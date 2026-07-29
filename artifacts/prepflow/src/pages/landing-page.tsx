@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AppLogo } from "@/components/ui/app-logo";
 import { useWorkspaceStore } from "@/lib/workspace-store";
 import { useAuth } from "@/lib/auth-context";
 import { requestQueue } from "@/lib/request-queue";
 import { prefetchWorkspaceModules } from "@/hooks/use-module-loader";
 import {
-  Brain,
   Sparkles,
   ArrowRight,
   History,
@@ -61,7 +61,7 @@ export function LandingPage() {
     setError(null);
 
     try {
-      // 1. Fetch overview only (fast ~1-2s response)
+      // 1. Fetch overview only (fast response)
       const overviewData = await requestQueue.fetchModule(
         trimmed,
         "overview",
@@ -106,12 +106,23 @@ export function LandingPage() {
 
   return (
     <Layout>
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12 md:py-24 max-w-4xl mx-auto w-full relative">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12 md:py-20 max-w-4xl mx-auto w-full relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 blur-[130px] rounded-full pointer-events-none -z-10 animate-pulse" />
+
+        {/* Animated App Logo directly above hero heading */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="mb-6 flex justify-center"
+        >
+          <AppLogo size={64} showText className="scale-110 drop-shadow-xl" />
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
           className="text-center space-y-6 mb-10"
         >
           <Badge variant="outline" className="px-4 py-1.5 rounded-full border-primary/30 bg-primary/5 text-primary text-sm shadow-sm backdrop-blur-sm">
@@ -132,7 +143,7 @@ export function LandingPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
           className="w-full max-w-2xl mb-8"
         >
           <Card className="border-border/60 shadow-2xl bg-card/80 backdrop-blur-xl rounded-2xl overflow-hidden p-2">
@@ -158,19 +169,19 @@ export function LandingPage() {
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-border/40 px-2 pb-1">
-                <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-amber-500" /> Modular AI architecture — instant overview response
-                </span>
+              <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                <div className="text-xs text-muted-foreground hidden sm:block">
+                  Press <kbd className="px-1.5 py-0.5 bg-muted rounded border text-[10px] font-mono">Enter</kbd> to generate
+                </div>
+
                 <Button
                   onClick={() => handleGenerate()}
                   disabled={!topic.trim() || loading}
-                  size="lg"
-                  className="w-full sm:w-auto rounded-xl px-6 font-semibold shadow-lg shadow-primary/25 gap-2"
+                  className="w-full sm:w-auto font-semibold rounded-xl px-6 h-11 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25 gap-2 ml-auto"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Generating Workspace...
+                      <Loader2 className="w-4 h-4 animate-spin" /> Generating...
                     </>
                   ) : (
                     <>
@@ -181,16 +192,25 @@ export function LandingPage() {
               </div>
             </CardContent>
           </Card>
+        </motion.div>
 
-          {/* Example Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-            <span className="text-xs text-muted-foreground font-medium mr-1">Try:</span>
+        {/* Quick Example Topics */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.3 }}
+          className="w-full max-w-2xl mb-12"
+        >
+          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center mb-3">
+            Popular Topics
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
             {EXAMPLE_TOPICS.map((t) => (
               <button
                 key={t}
                 onClick={() => handleGenerate(t)}
                 disabled={loading}
-                className="text-xs px-3 py-1.5 rounded-full bg-secondary/80 hover:bg-secondary text-secondary-foreground transition-all hover:scale-105 border border-border/40 disabled:opacity-50"
+                className="px-3.5 py-1.5 bg-secondary/80 hover:bg-secondary border border-border/50 text-secondary-foreground text-xs rounded-full font-medium transition-all hover:scale-105 active:scale-95"
               >
                 {t}
               </button>
@@ -198,44 +218,40 @@ export function LandingPage() {
           </div>
         </motion.div>
 
-        {/* Recent Workspaces */}
+        {/* Recent Sessions */}
         {sessionsList.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="w-full max-w-3xl mt-8 space-y-4"
+            transition={{ duration: 0.3, delay: 0.4 }}
+            className="w-full max-w-2xl"
           >
-            <div className="flex items-center justify-between px-1">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <History className="w-4 h-4 text-primary" /> Your Saved Workspaces
-              </h2>
-              <span className="text-xs font-mono text-muted-foreground">{sessionsList.length} saved</span>
+            <div className="flex items-center gap-2 mb-4 text-sm font-semibold text-muted-foreground">
+              <History className="w-4 h-4 text-primary" />
+              <span>Recent Learning Workspaces</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {sessionsList.map((s: any) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {sessionsList.slice(0, 4).map((s: any) => (
                 <Card
                   key={s.id}
                   onClick={() => handleResumeSession(s.id)}
-                  className="border-border/60 hover:border-primary/50 transition-all cursor-pointer hover:shadow-md group bg-card/50"
+                  className="p-4 border-border/40 hover:border-primary/50 bg-card/50 hover:bg-card/90 transition-all cursor-pointer group shadow-sm hover:shadow-md rounded-xl"
                 >
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="space-y-1 min-w-0 pr-3">
-                      <h3 className="font-semibold text-sm truncate group-hover:text-primary transition-colors flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-primary shrink-0" />
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1 pr-2">
+                      <div className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
                         {s.topic}
-                      </h3>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      </div>
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {new Date(s.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-normal">
-                          {s.workspace.difficulty || "Intermediate"}
-                        </Badge>
+                        {new Date(s.createdAt).toLocaleDateString()}
                       </div>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
-                  </CardContent>
+                    <Badge variant="secondary" className="text-[10px] uppercase shrink-0">
+                      {s.workspace?.difficulty ?? "Study"}
+                    </Badge>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -245,3 +261,5 @@ export function LandingPage() {
     </Layout>
   );
 }
+
+export default LandingPage;
