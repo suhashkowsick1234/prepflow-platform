@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import Groq from "groq-sdk";
 import { callGroqWithModelFallback, safeParseJson } from "./groq-client";
-import { getFallbackCodeExample } from "./fallback-generators";
+import { getFallbackCodeExample, validateTopicRelevance } from "./fallback-generators";
 
 const router: IRouter = Router();
 
@@ -10,7 +10,7 @@ const SYSTEM_PROMPT = `You are a principal software engineer and computer scienc
 CRITICAL CODE REQUIREMENTS:
 1. You MUST generate FULL, WORKING, EXECUTABLE source code in 4 languages: Java, Python, C++, and JavaScript.
 2. DO NOT use placeholders like "..." or "// code". Write complete function definitions, variables, loops/logic, and return statements.
-3. Generate only the requested approach. Do not include other approaches.
+3. The implementation MUST be specific to the requested topic/algorithm. DO NOT generate Two Sum or target-sum code unless the topic is specifically Two Sum.
 4. Format all JSON fields cleanly.`;
 
 const USER_PROMPT = (topic: string, approach: string) => {
@@ -20,37 +20,39 @@ const USER_PROMPT = (topic: string, approach: string) => {
     ? "Better / Optimized"
     : "Optimal / Best";
 
-  return `Generate coding examples and analysis for the topic or algorithm: "${topic}" using the "${approachTitle}" approach.
+  return `Generate coding examples and analysis SPECIFICALLY for the topic or algorithm: "${topic}" using the "${approachTitle}" approach.
+
+CRITICAL: The implementation MUST be specific to "${topic}". Do NOT generate Two Sum or target-sum code unless "${topic}" is specifically Two Sum.
 
 Return ONLY this JSON structure:
 {
   "isProgramming": true,
-  "description": "Comprehensive implementation and algorithm analysis for ${topic}",
-  "problemStatement": "Given an input array/structure, solve the ${topic} problem. Input: ..., Output: ..., Constraints: ...",
+  "description": "Comprehensive implementation and algorithm analysis specifically for ${topic}",
+  "problemStatement": "Problem Statement and constraints specifically for ${topic}...",
   "${approach}": {
-    "explanation": "High level description of how this specific approach works.",
+    "explanation": "High level description of how the ${approachTitle} approach for ${topic} works.",
     "timeComplexity": "O(...)",
     "spaceComplexity": "O(...)",
     "examples": [
       {
         "language": "JavaScript",
-        "code": "function solve(nums, target) {\\n    // Full working JavaScript code\\n}",
-        "explanation": "Walkthrough of JS solution"
+        "code": "// Complete working JavaScript implementation specifically for ${topic}",
+        "explanation": "Walkthrough of JS solution for ${topic}"
       },
       {
         "language": "Python",
-        "code": "def solve(nums: list[int], target: int) -> list[int]:\\n    # Full working Python code\\n    pass",
-        "explanation": "Walkthrough of Python solution"
+        "code": "# Complete working Python implementation specifically for ${topic}",
+        "explanation": "Walkthrough of Python solution for ${topic}"
       },
       {
         "language": "Java",
-        "code": "public class Solution {\\n    public static int[] solve(int[] nums, int target) {\\n        // Full working Java code\\n    }\\n}",
-        "explanation": "Walkthrough of Java solution"
+        "code": "// Complete working Java implementation specifically for ${topic}",
+        "explanation": "Walkthrough of Java solution for ${topic}"
       },
       {
         "language": "C++",
-        "code": "#include <vector>\\nusing namespace std;\\nvector<int> solve(vector<int>& nums, int target) {\\n    // Full working C++ code\\n}",
-        "explanation": "Walkthrough of C++ solution"
+        "code": "// Complete working C++ implementation specifically for ${topic}",
+        "explanation": "Walkthrough of C++ solution for ${topic}"
       }
     ]
   }
@@ -76,7 +78,7 @@ function normalizeCode(parsed: any, topic: string, targetApproach: string): any 
     return getFallbackCodeExample(topic, targetApproach);
   }
 
-  return {
+  const result = {
     isProgramming: parsed.isProgramming ?? true,
     description: String(parsed.description || `Coding analysis for ${topic}`),
     problemStatement: String(parsed.problemStatement || `Implement and analyze ${topic}`),
@@ -87,6 +89,13 @@ function normalizeCode(parsed: any, topic: string, targetApproach: string): any 
       examples,
     },
   };
+
+  // Validate topic relevance to eliminate cross-topic leakage
+  if (!validateTopicRelevance(result, topic)) {
+    return getFallbackCodeExample(topic, targetApproach);
+  }
+
+  return result;
 }
 
 router.post("/code", async (req, res): Promise<void> => {
